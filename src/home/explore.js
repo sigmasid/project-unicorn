@@ -118,9 +118,10 @@ const Categories = (classes, selectedCategory, selectedCategoryName) => {
 
         var categoryLink = selectedCategoryName === 'technology' ? category.replace(/ /g,"-") : selectedCategoryName.replace(/ /g,"-");
         var selectedCategoryLink = selectedCategoryName === 'technology' ? undefined : category;
-
+        var chipsOpen = selectedCategoryName === 'technology' ? true : false;
+        
         return(
-        <Link to={{ pathname: '/s/'+categoryLink, state: { selectedCategory: selectedCategoryLink } }} key={category} className={classes.link} >
+        <Link to={{ pathname: '/s/'+categoryLink, state: { selectedCategory: selectedCategoryLink, chipsOpen: chipsOpen } }} key={category} className={classes.link} >
           <ListItem button key={category} >
             <Avatar className={classes.avatar}>{typeof selectedCategory[category].logo === 'string' ? selectedCategory[category].logo : category.charAt(0).toUpperCase()}</Avatar>
             <ListItemText primary={category.toProperCase()} />

@@ -60,7 +60,7 @@ const styles = theme => ({
 });
 
 function SectorCard(props) {
-  const { classes, sector, categories, selectedCategoryName, updateCompSet } = props;
+  const { classes, sector, categories, selectedCategoryName, updateCompSet, chipsOpen } = props;
 
   if (sector === undefined) {
     return <Loading />
@@ -74,7 +74,7 @@ function SectorCard(props) {
         </div>
         <CardHeader 
           title={selectedCategoryName.toProperCase()}
-          subheader={(categories[selectedCategoryName].description && categories[selectedCategoryName].description) || sector.name.toProperCase()}
+          subheader={(categories[selectedCategoryName].description && categories[selectedCategoryName].description) || (sector && sector.name.toProperCase())}
           classes={{
             root: classes.header,
             title: classes.title,
@@ -82,7 +82,7 @@ function SectorCard(props) {
           }}            
         />
         <CardContent className={classes.content}>
-          <ExpansionPanel className={classes.changeSector}>
+          <ExpansionPanel className={classes.changeSector} defaultExpanded={chipsOpen || false} >
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
               <div className={classes.sectorText}><Typography className={classes.heading}>Change Sector</Typography></div>
             </ExpansionPanelSummary>

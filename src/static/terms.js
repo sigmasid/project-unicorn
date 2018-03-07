@@ -9,6 +9,7 @@ import Typography from 'material-ui/Typography';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import MethodologyItems from './methodology-items.js';
 import Paper from 'material-ui/Paper';
+import Items from './terms.json';
 
 const styles = theme => ({
   root: {
@@ -17,6 +18,7 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.paper,
     margin: '0 auto',
     marginTop: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit * 3,
     [theme.breakpoints.down('md')]: {
       maxWidth: '100%',
       marginTop: 0
@@ -51,46 +53,44 @@ const styles = theme => ({
   },
   lists: {
     boxShadow: 'none',
-    padding: 20,
+    padding: '20px 20px 0px 40px',
+    marginBottom: 30,
     [theme.breakpoints.down('md')]: {
       padding: 10
     }
   },
 });
 
-const MethodologyDetail = (props) => props.items.map((item, index) => {
+const termsWelcome = "WELCOME TO PROJECT UNICORN! WE ENCOURAGE YOU TO TAKE ADVANTAGE OF THE CONTENT AND FEATURES AVAILABLE ON THINKAPART.COM AND ALL THINKAPART-OWNED WEBSITES (EACH, A 'WEBSITE'). PLEASE READ THESE NON-NEGOTIABLE TERMS OF USE CAREFULLY BEFORE USING THE WEBSITE. BY CONTINUING TO USE THE WEBSITE, YOU (THE 'USER') AGREE TO BE BOUND BY THESE TERMS OF USE."
+
+const TermsDetail = (props) => Object.keys(props.items).map((item, index) => {
   return(
-    <ExpansionPanel key={index} className={props.classes.expansionPanel} >
-      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography className={props.classes.heading} >{item.question}</Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
-        <Typography color='textSecondary'>
-          {item.answer}
-        </Typography>
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+    <Paper className={props.classes.paper} key={item}>
+      <Typography variant="title" gutterBottom>{item}</Typography>
+      <Typography variant="subheading" color="textSecondary" gutterBottom>{props.items[item]}</Typography>
+    </Paper>
   )
 })
 
-function MethodologyPanes(props) {
+function Terms(props) {
   const { classes } = props;
   return (
   <div className={classes.root}>
     <Paper className={classes.header} >
       <Typography type="display3" className={classes.titleText}>
-        FAQs
+        Terms & Conditions
       </Typography>
     </Paper>
     <Paper className={classes.lists} >
-      <MethodologyDetail items={MethodologyItems} classes={classes} />
+      <Typography variant="title" gutterBottom>{termsWelcome}</Typography>
+      <TermsDetail classes={classes} items={Items} />
     </Paper>
   </div>
   );
 }
 
-MethodologyPanes.propTypes = {
+Terms.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(MethodologyPanes);
+export default withStyles(styles)(Terms);

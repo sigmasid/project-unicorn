@@ -132,23 +132,24 @@ class SectorDetails extends React.Component {
   }
 
  render() {
-    const { sector, compSet, selectedCategoryName, error } = this.state;
+    const { sector, compSet, selectedCategoryName, error, sectorID } = this.state;
+    console.log('chips open is ' + this.state.chipsOpen);
 
     if (error) {
       return (<ErrorMessage message="Sorry, we are not tracking this sector yet! Please try another" />);
     }
-
     return (
     <div>
       <Helmet>
-        <title>{this.state.sectorID.toProperCase()}</title>
-        <meta name="description" content={"Valuation & Operating Analysis  for " + this.state.sectorID.toProperCase()} />          
+        <title>{sectorID.toProperCase()}</title>
+        <meta name="description" content={"Valuation & Operating Analysis  for " + sectorID.toProperCase()} />          
       </Helmet>
       <SectorCard sector={sector} 
                   categories={!sector ? undefined : sector.type} 
                   handleDelete={this.handleDelete}
                   updateCompSet={this.getComps}
                   selectedCategoryName={selectedCategoryName}
+                  chipsOpen={this.props.location.state.chipsOpen}
                   />
 
       <SectorStats compSet={compSet} />

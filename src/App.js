@@ -11,6 +11,7 @@ import Sidebar from './sidebar/sidebar.js';
 import TopNav from './navs/topNav.js';
 import BottomNav from './navs/bottomNav.js';
 import Methodology from './static/methodology.js';
+import Terms from './static/terms.js';
 import Contact from './static/contact.js';
 import CompanyDetail from './companyDetail/companyDetail.js';
 import SectorDetail from './sectorDetail/sectorDetail.js';
@@ -205,7 +206,9 @@ class App extends Component {
                   <Route exact path="/" render={(props) => (<Home setFeatured={this.setFeatured} featuredTickers={featuredTickers} />)} />
                   <Route exact path="/methodology" component={Methodology}/>
                   <Route exact path="/explore" component={Explore}/>                  
-                  <Route exact path="/contact" component={Contact}/>                  
+                  <Route exact path="/contact" component={Contact}/>       
+                  <Route exact path="/terms" component={Terms}/>                  
+
                   <Route path="/c/:cid" component={CompanyDetail} />
                   <Route path="/s/:sectorid" component={SectorDetail} />
                 </Switch>
