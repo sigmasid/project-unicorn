@@ -9,6 +9,7 @@ import CompanyComps from './companyComps.js';
 import SimilarStartups from './similarStartups.js';
 import ErrorMessage from '../shared/errorMessage.js';
 import {Helmet} from "react-helmet";
+import ReactGA from 'react-ga';
 
 //const util = require('util'); //print an object
 
@@ -42,7 +43,6 @@ class CompanyDetails extends React.Component {
     var companyID = nextProps.match.params.cid;
     if (companyID !== this.state.companyID) {
       this.getCompany(companyID);
-      window.scrollTo(0, 0);
     }
   }
 
@@ -85,6 +85,11 @@ class CompanyDetails extends React.Component {
 
     compsRef.get()
     .then(snapshot => {
+        ReactGA.event({
+          category: 'Company Detail',
+          action: 'Get Comps',
+          label: this.state.companyID + ' - ' + category
+        });
         var compsList = [];
         snapshot.forEach(doc => {
           compsList.push(doc.data());
@@ -110,8 +115,8 @@ class CompanyDetails extends React.Component {
     });
   };
 
-  setValuation(valuation, impliedMetric, multipleMidpoint) {
-		this.setState({ puEstimate: valuation, impliedMetric: impliedMetric, multipleMidpoint: multipleMidpoint });
+  setValuation(valuation, impliedMetric, multipleMidpoint, hardcodeMetric) {
+		this.setState({ puEstimate: valuation, impliedMetric: impliedMetric, multipleMidpoint: multipleMidpoint, hardcodeMetric: hardcodeMetric });
   }
 
   setMultiples(low, high) {
@@ -122,11 +127,13 @@ class CompanyDetails extends React.Component {
   }
 
   getMetric = () => {
-  	if (this.state.company === undefined || this.state.company[this.state.selectedMetric+'_'+this.state.selectedYear] === undefined ) {
+    const { company, selectedMetric, selectedYear } = this.state;
+
+  	if (!company || company[selectedMetric+'_'+selectedYear] === undefined ) {
   		return undefined
   	}
 
-  	return this.state.company[this.state.selectedMetric+'_'+this.state.selectedYear];
+  	return company[selectedMetric+'_'+selectedYear];
   }
 
  render() {
@@ -147,13 +154,14 @@ class CompanyDetails extends React.Component {
                     impliedMetric={this.state.impliedMetric} 
                     selectedMetric={selectedMetric} 
                     selectedYear={selectedYear} 
-                    metric={ this.getMetric() || undefined } 
+                    metric={ this.state.hardcodeMetric || this.getMetric() } 
                     multipleMidpoint={this.state.multipleMidpoint} 
-                    selectedCategory={selectedCategory} />
+                    selectedCategory={selectedCategory} 
+                    />
 
-      <ValuationSummary lowMultiple={ this.state.lowMultiple !== undefined ? this.state.lowMultiple.toFixed(1) : undefined }
-                        highMultiple={ this.state.highMultiple !== undefined ? this.state.highMultiple.toFixed(1) : undefined } 
-                        metric={ this.getMetric() || undefined } 
+      <ValuationSummary lowMultiple={ this.state.lowMultiple }
+                        highMultiple={ this.state.highMultiple } 
+                        metric={ this.getMetric() } 
                         setValuation={this.setValuation} 
                         selectedMetric={selectedMetric} 
                         selectedYear={selectedYear}

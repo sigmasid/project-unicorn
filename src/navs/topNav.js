@@ -9,7 +9,10 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
-import WhatsHotIcon from 'material-ui-icons/Whatshot';
+import SearchIcon from 'material-ui-icons/Search';
+import CloseIcon from 'material-ui-icons/Close';
+import ExploreIcon from 'material-ui-icons/Explore';
+
 import SearchBar from 'material-ui-search-bar';
 import Paper from 'material-ui/Paper';
 import Grow from 'material-ui/transitions/Grow';
@@ -19,57 +22,21 @@ import { MenuItem, MenuList} from 'material-ui/Menu';
 import { findDOMNode } from 'react-dom';
 import 'typeface-roboto';
 
-
 //const util = require('util') //print an object
-const drawerWidth = 240;
 
 const styles = theme => ({
-  menuButton: {
-    marginLeft: 12,
-    marginRight: 20,
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: 0
-    },
-  },
-  bigAvatar: {
-    width: 60,
-    height: 60,
-    backgroundColor: 'white',
-    [theme.breakpoints.down('sm')]: {
-      width: 40,
-      height: 40,
-    },
-  },
-  emoji: {
-    fontSize: '3rem',
-    [theme.breakpoints.down('sm')]: {
-      fontSize: '2rem'
-    },
-  },
-  button: {
-    marginRight: -10,
-    marginLeft: 'auto',
-    [theme.breakpoints.down('sm')]: {
-      display: 'none'
-    }
-  },
-  hide: {
-    display: 'none',
-  },
   appBar: {
     position: 'absolute',
     zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
+    transition: theme.transitions.create(['left'], {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
+      duration: theme.transitions.duration.enteringScreen,
     }),
-    background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)'
-
+    background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
   },
   appBarShift: {
-    marginRight: drawerWidth,
-    width: `calc(100% - 240px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
+    left: 240,
+    transition: theme.transitions.create(['left'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -77,19 +44,77 @@ const styles = theme => ({
       display: 'none'
     }
   },
-  searchSuggestions: {
-    width: '60%',
-    margin: '0 auto',
+  toolbar: {
+    [theme.breakpoints.up('md')]: {
+      paddingLeft: 12
+    }
+  },
+  desktopMenu: {
+    display: 'flex',
+    width: '100%',
     [theme.breakpoints.down('sm')]: {
-      width: '80%'
+      display: 'none'
+    }
+  },
+  mobileMenu: {
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'space-between',
+    [theme.breakpoints.up('md')]: {
+      display: 'none'
+    }
+  },
+  mobileButton: {
+    width: 40,
+    height: 40,
+    color: 'white',
+    fontSize: '2rem'
+  },
+  bigAvatar: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'white',
+    [theme.breakpoints.down('md')]: {
+      width: 40,
+      height: 40,
     },
   },
+  emoji: {
+    fontSize: '2.25rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '2rem'
+    },
+  },
+  navButton: {
+    color: 'white',
+    textTransform: 'none',
+    fontSize: '1.15rem',
+    fontWeight: 800,
+    marginLeft: 20,
+    marginRight: 20
+  },
+  searchSuggestions: {
+    width: '50%',
+    marginRight: 50,
+    marginLeft: 50,
+    [theme.breakpoints.down('md')]: {
+      width: '100%',
+      marginRight: 0,
+      marginLeft: 0
+    },
+  },
+  mobileSearch: {
+    display: 'none'
+  }, 
   suggestionsList: {
     position: 'absolute',
     top: '10px',
     width: '100%',
     boxShadow: '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
-    background: theme.palette.common.white
+    background: theme.palette.common.white,
+    [theme.breakpoints.down('sm')]: {
+      top: 0
+    },
   }
 });
 
@@ -140,6 +165,7 @@ function RenderSuggestionsContainer(props) {
 class TopNav extends React.Component {
   state = {
     anchorEl: null,
+    searchOpen: false
   };
 
   handleChange = (value) => {
@@ -160,7 +186,7 @@ class TopNav extends React.Component {
         getSuggestions(value, index)
         this.setState({
           index: index,
-          anchorEl: findDOMNode(this.button),
+          anchorEl: findDOMNode(!this.state.searchOpen ? this.button : this.mobileSearch),
           results: getSuggestions(value, index),
           searchText: value
         });
@@ -190,35 +216,75 @@ class TopNav extends React.Component {
     });
   }
 
+  showSearch = () => {
+    this.setState({
+      searchOpen: !this.state.searchOpen 
+    });
+  }
+
   button = null;
+  mobileSearch = null;
 
   render() {
     const { classes } = this.props;
+    const { searchOpen } = this.state;
+
     return (
     <AppBar className={classNames(classes.appBar, this.props.open && classes.appBarShift)}>
-      <Toolbar >
-        <IconButton component={Link} to={'/'} color="inherit" aria-label="open drawer" className={classNames(classes.menuButton, this.props.open )} >
-          <Avatar alt="Project Unicorn" className={classNames(classes.avatar, classes.bigAvatar)}><span className={classes.emoji} role="img" aria-label="Company Logo">🦄</span></Avatar>
-        </IconButton>
-        <div className={classes.searchSuggestions}>
-          <SearchBar
-            ref={node => { this.button = node;}}
-            placeholder='Search Unicorns'
-            onChange={ (value) => this.handleChange(value) }
-            onRequestSearch={ this.handleChange.bind(null) }
-            className={classes.searchBar}
-            style={{
-              margin: '0 auto',
-              width: '100%'
-            }}
-            value={this.state.searchText}
-          />
-          <RenderSuggestionsContainer results={this.state.results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} classes={classes} />
+      <Toolbar className={classes.toolbar}>
+        <div className={classes.desktopMenu}>
+          <IconButton onClick={this.props.handleDrawerOpen} color="inherit" aria-label="open drawer" >
+            <Avatar alt="Project Unicorn" className={classNames(classes.avatar, classes.bigAvatar)}><span className={classes.emoji} role="img" aria-label="Company Logo">🦄</span></Avatar>
+          </IconButton>
+          <Button aria-label="leaderboard" component={Link} to={'/'}  className={classes.navButton} color="default" size="large">
+            Leaderboard
+          </Button>
+          <Button aria-label="explore" component={Link} to={'/explore'} className={classes.navButton} color="default" size="large">
+            Explore
+          </Button>
+          <div className={classes.searchSuggestions}>
+            <SearchBar
+              ref={node => { this.button = node;}}
+              placeholder='Search Unicorns'
+              onChange={ (value) => this.handleChange(value) }
+              onRequestSearch={ this.handleChange.bind(null) }
+              className={classes.searchBar}
+              style={{
+                margin: '0 auto',
+                width: '100%'
+              }}
+              value={this.state.searchText}
+            />
+            <RenderSuggestionsContainer results={this.state.results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} classes={classes} />
+          </div>           
         </div>
-        <Button fab mini aria-label="whats-hot" onClick={this.props.handleDrawerOpen}  className={classes.button} color="secondary">
-          <WhatsHotIcon />
-        </Button>
+        <div className={classes.mobileMenu}>
+          <IconButton color="inherit" aria-label="home" size="large" className={ classes.mobileButton } component={Link} to={'/'} >
+            <Avatar alt="Project Unicorn" className={classNames(classes.avatar, classes.bigAvatar)}><span className={classes.emoji} role="img" aria-label="Company Logo">🦄</span></Avatar>
+          </IconButton>        
+          <IconButton color="inherit" aria-label="explore" size="large" className={classNames(classes.mobileButton )} component={Link} to={'/explore'} >
+            <ExploreIcon />
+          </IconButton>
+          <IconButton color="inherit" aria-label="search" size="large" className={classNames(classes.mobileButton )} onClick={this.showSearch}>
+            {searchOpen ? <CloseIcon /> : <SearchIcon />}
+          </IconButton>
+        </div>
       </Toolbar>
+      <div className={classNames(classes.searchSuggestions, !this.state.searchOpen && classes.mobileSearch)}>
+        <SearchBar
+          ref={node => { this.mobileSearch = node;}}
+          placeholder='Search Unicorns'
+          onChange={ (value) => this.handleChange(value) }
+          onRequestSearch={ this.handleChange.bind(null) }
+          className={classes.searchBar}
+          style={{
+            margin: '0 auto',
+            width: '100%'
+          }}
+          value={this.state.searchText}
+        />
+        <RenderSuggestionsContainer results={this.state.results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} classes={classes} />
+      </div>
     </AppBar>
     );
   }

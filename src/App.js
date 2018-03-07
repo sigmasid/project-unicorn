@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import './App.css';
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
+import ReactGA from 'react-ga';
+
 import classNames from 'classnames';
 import { withStyles } from 'material-ui/styles';
 
-import Tickers from './sidebar/companyTickers.js';
+import Sidebar from './sidebar/sidebar.js';
 import TopNav from './navs/topNav.js';
 import BottomNav from './navs/bottomNav.js';
 import Methodology from './static/methodology.js';
@@ -13,16 +15,13 @@ import Contact from './static/contact.js';
 import CompanyDetail from './companyDetail/companyDetail.js';
 import SectorDetail from './sectorDetail/sectorDetail.js';
 import Home from './home/home.js';
-import Loading from './shared/loading.js';
+import Explore from './home/explore.js';
+import ScrollToTop from './shared/scrollToTop.js';
+import EmailSignup from './shared/emailCapture.js';
 
 import { MuiThemeProvider, createMuiTheme } from "material-ui/styles";
-import {lightBlue, orange, red} from 'material-ui/colors';
+import {lightBlue, red} from 'material-ui/colors';
 import {Helmet} from "react-helmet";
-
-//import newCompanies from './new-cos.json';
-//import foreignIndex from './foreign_public_index.json';
-//import createPalette from 'material-ui/styles';
-//import categoryIndex from './categories.json';
 
 import {
   BrowserRouter as Router,
@@ -41,6 +40,8 @@ var config = {
   messagingSenderId: "13608224150"
 };
 firebase.initializeApp(config);
+
+ReactGA.initialize('UA-115273593-1');
 
 const muiTheme = createMuiTheme({
   palette: {
@@ -70,19 +71,18 @@ const styles = theme => ({
     height: '100%',
   },
   content: {
-    width: '100%',
-    flexGrow: 1,
     backgroundColor: theme.palette.background.default,
-    minHeight: '80vh',
+    minHeight: 'calc(100vh - 120px)',
+    marginTop: 56,
     [theme.breakpoints.up('md')]: {
+      width: 'calc(100% - 56px)',
+      marginTop: 64,
       padding: 24
     },
-    height: 'calc(100% - 56px)',
-    marginTop: 56,
-    [theme.breakpoints.up('sm')]: {
-      height: 'calc(100% - 64px)',
+    [theme.breakpoints.down('md')]: {
+      width: '100%',
       marginTop: 64,
-    },
+    }    
   },
   'contentShift': {
     width: '100%'
@@ -92,17 +92,43 @@ const styles = theme => ({
   }
 });
 
+const AnalyticsTracker = () => {
+  return <Route component={Analytics} />
+}
+
+class Analytics extends React.Component<RouteComponentProps<any>> {
+  componentDidMount() {
+    this.sendPageChange(this.props.location.pathname, this.props.location.search)
+  }
+
+  componentDidUpdate(prevProps: RouteComponentProps<any>) {
+    if (this.props.location.pathname !== prevProps.location.pathname
+      || this.props.location.search !== prevProps.location.search) {
+      this.sendPageChange(this.props.location.pathname, this.props.location.search)
+    }
+  }
+
+  sendPageChange(pathname: string, search: string = "") {
+    const page = pathname + search
+    ReactGA.set({page});
+    ReactGA.pageview(page);
+  }
+
+  render() {
+    return null
+  }
+}
+
 class App extends Component {
   constructor (props) {
     super(props);
 
     this.state = {
-      open: false
+      open: false,
+      showCapture: true
     };
 
-    this.getUnicorns();
-    //this.updatePublic();
-    //this.updateCompanies();
+    this.handleEmailToggle = this.handleEmailToggle.bind(this);
   }
 
   handleDrawerOpen = () => {
@@ -113,77 +139,6 @@ class App extends Component {
     this.setState({ open: false });
   };
 
-  updateCompanies = () => {
-    /**
-    var db = firebase.firestore();
-    var batch = db.batch();
-    
-    newCompanies.forEach(function (company, i) {
-      var publicRef = db.collection('public').doc(company.ticker.toLowerCase());
-      let categories = {};
-      var catArray = company.categories.split(', ');
-      
-      catArray.forEach(function (cat, i) {
-        categories[cat] = true;
-      });
-
-      company.category = categories;
-      delete company.categories;
-      batch.set(publicRef, company); 
-    });
-    
-    batch.commit()
-    .then(function () {
-      console.log("commit successful")
-    }).catch(function(error) {
-      console.log('error updating'+error);
-    }); **/
-  }
-
-  changeTicker = (oldTickers, newTickers) => {
-    //this.changeTicker(["swx:abbn"],["abb"]);
-    var db = firebase.firestore();
-    var docRef = db.collection("public");
-
-    oldTickers.forEach(function(element, i) {
-      docRef.doc(element).get().then(function(doc) {
-        var newRef = db.collection("public").doc(newTickers[i]);
-        newRef.set(doc.data());
-
-        }).catch(function(error) {
-          console.log("Error getting document:", error);
-        });
-      });
-  }
-
-  updatePublic = () => {
-    /**
-    var db = firebase.firestore();
-    var batch = db.batch();
-    //var privateIndexRef = db.collection('indices').doc('categories').set(categoryIndex);
-
-    publics.forEach(function (company, i) {
-      var publicRef = db.collection('public').doc(company.ticker.toLowerCase());
-      //let categories = {};
-      //var catArray = unicorn.categories.split(', ');
-      
-      //catArray.forEach(function (cat, i) {
-      //  categories[cat] = true;
-      //});
-
-      //unicorn.category = categories;
-      //delete unicorn.categories;
-      batch.set(publicRef, company); 
-    });
-    
-    batch.commit()
-    .then(function () {
-      console.log("commit successful")
-    }).catch(function(error) {
-      console.log('error updating'+error);
-    }); **/
-  }
-
   setFeatured = (tickers) => {
     this.setState({
       featuredTickers: tickers
@@ -191,6 +146,10 @@ class App extends Component {
   }
 
   getUnicorns = () => {
+    if (this.state.featuredTickers) {
+      return;
+    }
+
     var db = firebase.firestore();
     var unicornsRef = db.collection('private').orderBy('lastValuation', 'desc').limit(10);
 
@@ -211,12 +170,19 @@ class App extends Component {
     });
   }
 
+  handleEmailToggle = (toggle) => {
+    this.setState({
+      showCapture: toggle
+    })
+  }
+
   render() {
-    const { open } = this.state;
+    const { open, featuredTickers } = this.state;
     const { classes } = this.props;
 
     return (
-      <Router>
+    <Router>
+      <ScrollToTop>
         <MuiThemeProvider theme={muiTheme}> 
           <div className={classes.root}>
             <Helmet
@@ -227,26 +193,30 @@ class App extends Component {
             </Helmet>
             <div className={classes.appFrame}>
               <TopNav title="" hidden={this.state.open} handleDrawerOpen={this.handleDrawerOpen} open={this.state.open} dataSource={this.state.searchResults} />
+              <Sidebar open={this.state.open} handleDrawerClose={this.handleDrawerClose} tickers={featuredTickers || undefined } handleEmailToggle={this.handleEmailToggle} loadTrending={this.getUnicorns} />
               <main
                 className={classNames(classes.content, classes[`content-right`], {
                   [classes.contentShift]: open,
                   [classes[`contentShift-right`]]: open,
                 })}
               >
+                <AnalyticsTracker />
                 <Switch>
-                  <Route exact path="/" render={(props) => (this.state.featuredTickers !== undefined ? <Home setFeatured={this.setFeatured} featuredTickers={this.state.featuredTickers} /> : <Loading /> )} />
+                  <Route exact path="/" render={(props) => (<Home setFeatured={this.setFeatured} featuredTickers={featuredTickers} />)} />
                   <Route exact path="/methodology" component={Methodology}/>
+                  <Route exact path="/explore" component={Explore}/>                  
                   <Route exact path="/contact" component={Contact}/>                  
                   <Route path="/c/:cid" component={CompanyDetail} />
                   <Route path="/s/:sectorid" component={SectorDetail} />
                 </Switch>
               </main>
-              <Tickers open={this.state.open} handleDrawerClose={this.handleDrawerClose} tickers={this.state.featuredTickers || undefined } />
             </div>
-            <BottomNav />
+            <EmailSignup showCapture={this.state.showCapture} handleEmailToggle={this.handleEmailToggle} />
+            <BottomNav handleEmailToggle={this.handleEmailToggle} />
           </div>
         </MuiThemeProvider>
-      </Router>
+      </ScrollToTop>
+    </Router>
     );
   }
 }

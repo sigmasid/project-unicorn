@@ -8,8 +8,6 @@ import Loading from '../shared/loading.js';
 import Avatar from 'material-ui/Avatar';
 import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
 
-import { red, green, amber } from 'material-ui/colors';
-
 //const util = require('util'); //print an object
 
 const styles = theme => ({
@@ -27,25 +25,11 @@ const styles = theme => ({
   title: {
     color: 'black'
   },
-  redAvatar: {
+  avatar: {
     width: 100,
     height: 100,
     color: '#fff',
-    backgroundColor: red[500],
-    margin: '0 auto'
-  },
-  amberAvatar: {
-    width: 100,
-    height: 100,
-    color: '#fff',
-    backgroundColor: amber[500],
-    margin: '0 auto'
-  },
-  greenAvatar: {
-    width: 100,
-    height: 100,
-    color: '#fff',
-    backgroundColor: green[500],
+    backgroundColor: 'black',
     margin: '0 auto'
   }
 });
@@ -123,7 +107,7 @@ const StatOutput = (classes, compSet) => {
   <CardContent>
     <GridList cellHeight={180} className={classes.gridList} cols={3}>
       <GridListTile key={1}>
-        <Avatar className={sectorValues.totalRev > 10000  ? classes.greenAvatar : sectorValues.totalRev > 1000 ? classes.amberAvatar : classes.redAvatar }>
+        <Avatar className={ classes.avatar }>
           <NumberFormat value={ formatMetric(sectorValues.totalRev) } displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(sectorValues.totalRev)} />
         </Avatar>
         <GridListTileBar
@@ -137,7 +121,7 @@ const StatOutput = (classes, compSet) => {
         />
       </GridListTile>
       <GridListTile key={2} className={classes.statTile}>
-        <Avatar className={ sectorValues.revGrowth > 0.1 ? classes.greenAvatar : sectorValues.revGrowth > 0.05 ? classes.amberAvatar : classes.redAvatar }><NumberFormat value={Math.round(sectorValues.revGrowth * 100)} displayType={'text'} suffix={'%'}/></Avatar>
+        <Avatar className={ classes.avatar }><NumberFormat value={Math.round(sectorValues.revGrowth * 100)} displayType={'text'} suffix={'%'}/></Avatar>
         <GridListTileBar
           title="Forward Rev Growth %"
           subtitle="CY2017 - CY2018E"
@@ -162,7 +146,7 @@ const StatOutput = (classes, compSet) => {
         />
       </GridListTile> */}
       <GridListTile key={3}>
-        <Avatar className={ sectorValues.netMargin > 0.05 ? classes.greenAvatar : sectorValues.netMargin > 0 ? classes.amberAvatar : classes.redAvatar }><NumberFormat value={Math.round(sectorValues.netMargin * 100)} displayType={'text'} suffix={'%'}/></Avatar>
+        <Avatar className={ classes.avatar }><NumberFormat value={Math.round(sectorValues.netMargin * 100)} displayType={'text'} suffix={'%'}/></Avatar>
         <GridListTileBar
           title="Net Margin"
           subtitle="CY2018E"

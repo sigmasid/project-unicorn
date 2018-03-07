@@ -6,7 +6,12 @@ import Loading from '../shared/loading.js';
 import SectorChips from './sectorChips.js';
 import Avatar from 'material-ui/Avatar';
 import classNames from 'classnames';
-import grey from 'material-ui/colors/grey';
+import ExpansionPanel, {
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+} from 'material-ui/ExpansionPanel';
+import Typography from 'material-ui/Typography';
+import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 
 //const util = require('util'); //print an object
 
@@ -39,16 +44,23 @@ const styles = theme => ({
       height: 75
     },
     color: '#fff',
-    backgroundColor: grey[100],
+    backgroundColor: theme.palette.background.default,
     margin: '0 auto'
   },
-  chips: {
-    maxWidth: '50%'
+  title: {
+    fontSize: '3.5rem',
+    fontWeight: 800
+  },
+  changeSector: {
+    boxShadow: 'none',
+  },
+  sectorText: {
+    marginLeft: 'auto'
   }
 });
 
 function SectorCard(props) {
-  const { classes, sector, categories, selectedCategory, updateCompSet } = props;
+  const { classes, sector, categories, selectedCategoryName, updateCompSet } = props;
 
   if (sector === undefined) {
     return <Loading />
@@ -58,20 +70,29 @@ function SectorCard(props) {
     <div>
       <Card className={classes.card}>
         <div className={classes.logoWrapper}>
-          <Avatar alt="Sector Logo" className={classNames(classes.avatar, classes.tileAvatar)}><span className={classes.emoji} alt="sector logo">{sector.logo}</span></Avatar>
+          <Avatar alt="Sector Logo" className={classNames(classes.avatar, classes.tileAvatar)}><span className={classes.emoji} alt="sector logo">{categories[selectedCategoryName].logo}</span></Avatar>
         </div>
         <CardHeader 
-          title={sector.name.toProperCase()}
-          subheader={sector.description}
-          className={classes.header}             
+          title={selectedCategoryName.toProperCase()}
+          subheader={(categories[selectedCategoryName].description && categories[selectedCategoryName].description) || sector.name.toProperCase()}
+          classes={{
+            root: classes.header,
+            title: classes.title,
+            subheader: classes.subtitle
+          }}            
         />
         <CardContent className={classes.content}>
-          { categories !== undefined ? 
+          <ExpansionPanel className={classes.changeSector}>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <div className={classes.sectorText}><Typography className={classes.heading}>Change Sector</Typography></div>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails>
               <SectorChips  categories={categories} 
-                            selectedCategory={selectedCategory}
+                            selectedCategoryName={selectedCategoryName}
                             updateCompSet={updateCompSet}
-                            className={classes.chips} /> : 
-              <Loading /> }
+                            className={classes.chips} />
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
         </CardContent>
       </Card>
     </div>

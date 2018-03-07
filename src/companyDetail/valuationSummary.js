@@ -15,8 +15,10 @@ import Card, { CardContent, CardHeader } from 'material-ui/Card';
 import Icon from 'material-ui/Icon';
 import SvgIcon from 'material-ui/SvgIcon';
 import NumberFormat from 'react-number-format';
+import Tooltip from 'material-ui/Tooltip';
+import classNames from 'classnames';
 
-import { getFormattedMetric } from '../shared/sharedFunctions.js';
+import { getFormattedMetric, formatMetric, formatSuffix, parseValue, formatMultiple } from '../shared/sharedFunctions.js';
 
 //const util = require('util'); //print an object
 
@@ -114,17 +116,18 @@ class ValuationSummary extends React.Component {
 
   constructor (props) {
     super(props);
+    const { lowMultiple, highMultiple, metric, lastValuation } = props;
 
     this.state = {
       mode: 0,
       currentlyOpen: null,
       anchorEl: null,
-      metric: this.props.metric || '-',
-      lowMultiple: this.props.lowMultiple || '-',
-      highMultiple: this.props.highMultiple || '-'
+      metric: metric || 0,
+      lowMultiple: lowMultiple || 0,
+      highMultiple: highMultiple || 0
     };
 
-    this.props.setValuation(this.calcValuation(this.props.lowMultiple, this.props.highMultiple, this.props.metric), this.calcImpliedMetric(this.props.lowMultiple, this.props.highMultiple, this.props.lastValuation), this.calcMultipleMidpoint(this.props.lowMultiple, this.props.highMultiple));
+    this.props.setValuation(this.calcValuation(lowMultiple, highMultiple, metric), this.calcImpliedMetric(lowMultiple, highMultiple, lastValuation), this.calcMultipleMidpoint(lowMultiple, highMultiple));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -140,9 +143,9 @@ class ValuationSummary extends React.Component {
 
     if (shouldUpdate) {
       this.setState({
-        metric: nextProps.metric || '-',
-        lowMultiple: nextProps.lowMultiple || '-',
-        highMultiple: nextProps.highMultiple || '-'
+        metric: nextProps.metric || 0,
+        lowMultiple: nextProps.lowMultiple || 0,
+        highMultiple: nextProps.highMultiple || 0
       });
 
       this.props.setValuation(this.calcValuation(nextProps.lowMultiple, nextProps.highMultiple, nextProps.metric), this.calcImpliedMetric(nextProps.lowMultiple, nextProps.highMultiple, nextProps.lastValuation), this.calcMultipleMidpoint(nextProps.lowMultiple, nextProps.highMultiple));
@@ -150,12 +153,12 @@ class ValuationSummary extends React.Component {
   }
 
   calcMultipleMidpoint(lowMultiple, highMultiple) {
-    return (!isNaN(lowMultiple) && !isNaN(highMultiple)) ? ((parseFloat(lowMultiple) + parseFloat(highMultiple)) / 2).toFixed(1) : '-';
+    return (!isNaN(lowMultiple) && !isNaN(highMultiple)) ? ((parseFloat(lowMultiple) + parseFloat(highMultiple)) / 2).toFixed(1) : 0;
   }
 
   calcValuation(lowMultiple, highMultiple, metric) {
-    var lowValuation = (!isNaN(lowMultiple) && !isNaN(metric)) ? (lowMultiple * metric) : '-';
-    var highValuation = (!isNaN(highMultiple) && !isNaN(metric)) ? (highMultiple * metric) : '-';
+    var lowValuation = (!isNaN(lowMultiple) && !isNaN(metric)) ? (lowMultiple * metric) : 0;
+    var highValuation = (!isNaN(highMultiple) && !isNaN(metric)) ? (highMultiple * metric) : 0;
 
     if (!isNaN(lowValuation) && !isNaN(highValuation)) {
       return (lowValuation + highValuation) / 2;
@@ -170,21 +173,24 @@ class ValuationSummary extends React.Component {
   }
 
   handleChange = prop => event => {
-    var metric = prop === 'metric' ? parseFloat(event.target.value.replace(',','')) : this.state.metric; //formatter addes a comma - remove that
+    var metric = prop === 'metric' ? event.target.value : this.state.metric; //formatter addes a comma - remove that
     var lowMultiple = prop === 'lowMultiple' ? event.target.value : this.state.lowMultiple;
     var highMultiple = prop === 'highMultiple' ? event.target.value : this.state.highMultiple;
 
   	this.setState({
-  		[prop]: prop === 'metric' ? parseFloat(event.target.value.replace(',','')) : event.target.value
+  		[prop]: event.target.value
   	})
-    this.props.setValuation(((metric * lowMultiple) + (metric * highMultiple)) / 2);
+    this.props.setValuation(this.calcValuation(lowMultiple, highMultiple, parseValue(metric)), 
+                            this.calcImpliedMetric(lowMultiple, highMultiple, this.props.lastValuation), 
+                            this.calcMultipleMidpoint(lowMultiple, highMultiple),
+                            prop === 'metric' ? parseValue(metric) : this.state.metric);
   };
 
   reset = () => {
     this.setState({ 
       metric: this.props.metric,
-      lowMultiple: !isNaN(this.props.lowMultiple) ? this.props.lowMultiple : '-',
-      highMultiple: !isNaN(this.props.highMultiple) ? this.props.highMultiple : '-'
+      lowMultiple: !isNaN(this.props.lowMultiple) ? this.props.lowMultiple : 0,
+      highMultiple: !isNaN(this.props.highMultiple) ? this.props.highMultiple : 0
     });
   }
 
@@ -197,7 +203,7 @@ class ValuationSummary extends React.Component {
 
   handleClose = () => {
     this.setState({
-      currentlyOpen: null,
+      currentlyOpen: null
     });
   };
 
@@ -224,11 +230,13 @@ class ValuationSummary extends React.Component {
   };
 
   render() {
-    const { classes } = this.props;
-    var lowValue = this.state.mode === 0 ? this.state.lowMultiple * this.state.metric : this.props.lastValuation / this.state.highMultiple;
-    var highValue = this.state.mode === 0 ? this.state.highMultiple * this.state.metric : this.props.lastValuation / this.state.lowMultiple;
-    var firstValue = this.state.mode === 0 ? Math.round(this.state.metric) : this.props.lastValuation.toFixed(1) ;
-    
+    const { classes, selectedMetric, selectedYear } = this.props;
+    const { lowMultiple, highMultiple, mode, metric } = this.state;
+
+    var lowValue = mode === 0 ? lowMultiple * parseValue(metric) : this.props.lastValuation / highMultiple;
+    var highValue = mode === 0 ? highMultiple * parseValue(metric) : this.props.lastValuation / lowMultiple;
+    var firstValue = mode === 0 ? metric : this.props.lastValuation.toFixed(1) ;
+
     var showEstimate =  <Popover
                           open={this.state.currentlyOpen !== null}
                           anchorEl={this.state.anchorEl}
@@ -243,7 +251,7 @@ class ValuationSummary extends React.Component {
                             horizontal: 'center',
                           }}
                           elevation={2}
-                          className={classes.source}
+                          className={this.state.currentlyOpen === 'source' ? classes.source : classes.multiples }
                         >
                           <div className={classes.sourceWrapper}>
                             <Typography className={classes.typography} color={'textSecondary'} variant={'caption'} gutterBottom={true} >{ this.helperText() }</Typography>
@@ -259,47 +267,61 @@ class ValuationSummary extends React.Component {
         <CardHeader 
           title={this.state.mode === 0 ? "Valuation Summary" : "Implied Metrics"}
           subheader="$ in M(illions) / B(illions)" 
-          className={classes.header}             
+          className={classes.header}
           action={
           <div className={classes.cardActionsXL}>
-            <Button onClick={this.changeMode} >{this.state.mode === 0 ? "show implied metrics" : "show valuation summary"}</Button>
+            <Button onClick={this.changeMode} >{mode === 0 ? "show implied metrics" : "show valuation summary"}</Button>
             <Button onClick={this.reset}>reset</Button>
           </div>
         }/>   
         <CardContent className={classes.content}>
           <div className={classes.cardActionsMD}>
-            <Button onClick={this.changeMode} >{this.state.mode === 0 ? "show implied metrics" : "show valuation summary"}</Button>
+            <Button onClick={this.changeMode} >{mode === 0 ? "show implied metrics" : "show valuation summary"}</Button>
             <Button onClick={this.reset}>reset</Button>
           </div>
 	        <Grid container spacing={24} className={classes.content}>
 	          <Grid item md={3} xs={12} className={classes.valItem}>
+                <Tooltip
+                  id="tooltip-icon"
+                  title="enter millions or billions as decimals"
+                  enterDelay={300}
+                  leaveDelay={300}
+                  placement="top-start"
+                >
 	            <FormControl className={classes.formControl}>
-			          <InputLabel htmlFor="amount">{this.state.mode === 0 ? getFormattedMetric(this.props.selectedMetric, this.props.selectedYear) : "Last Valuation"}</InputLabel>
+			          <InputLabel htmlFor="amount">{mode === 0 ? getFormattedMetric(selectedMetric, selectedYear) : "Last Valuation"}</InputLabel>
 			          <Input
 			            id="adornment-amount"
-			            placeholder={ firstValue.toString() }
-                  disabled={this.state.mode === 0 ? false : true }
+                  disabled={mode === 0 ? false : true }
                   inputComponent={NumberFormatCustom}
-			            value={ isNaN(firstValue) ? '-' : (firstValue > 1000 ? (firstValue / 1000).toFixed(1) : firstValue) }
-			            onChange={this.state.mode === 0 ? this.handleChange('metric') : null}
+			            value={ formatMetric(firstValue, true) }
+			            onChange={mode === 0 ? this.handleChange('metric') : null}
                   className={classes.changeInput}
 			            startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                  endAdornment={<InputAdornment position="end">{firstValue > 1000 ? 'B' : 'M'}</InputAdornment>}
+                  endAdornment={<InputAdornment position="end">{formatSuffix(parseValue(firstValue)) }</InputAdornment>}
 			          />
 			  	      <FormHelperText id="weight-helper-text" onClick={() => this.handleClickButton('source')} ref={node => { this.sourceButton = node;}} className={classes.sourceLink} >
-                  {this.state.mode === 0 ? 'where is this from?' : this.props.lastValuationDate}
+                  {mode === 0 ? 'where is this from?' : this.props.lastValuationDate}
                 </FormHelperText>
                 { showEstimate }
 			        </FormControl>
+              </Tooltip>
 	          </Grid>
-	          <Icon color="primary" style={{ fontSize: 36 }} className={classes.mathSymbols} >close</Icon>
+	          <Icon color="inherit" style={{ fontSize: 36 }} className={classes.mathSymbols} >close</Icon>
 	          <Grid item md={4} xs={12}>
+                <Tooltip
+                  id="tooltip-icon"
+                  title="enter multiple to update valuation"
+                  enterDelay={300}
+                  leaveDelay={300}
+                  placement="top-start"
+                >
 			    		<FormControl className={classes.formControl}>
 			          <InputLabel htmlFor="amount">Comps Multiple Range</InputLabel>
 			          <Input
 			            id="adornment-amount"
-                  placeholder={this.state.lowMultiple.toString()}
-			            value={this.state.lowMultiple}
+                  placeholder={lowMultiple.toString()}
+			            value={formatMultiple(lowMultiple, true)}
 			            onChange={this.handleChange('lowMultiple')}
                   className={classes.changeInput}
 			            endAdornment={<InputAdornment position="end">x</InputAdornment>}
@@ -308,11 +330,19 @@ class ValuationSummary extends React.Component {
                   median
                 </FormHelperText>
 		        	</FormControl>
+              </Tooltip>
+              <Tooltip
+                id="tooltip-icon"
+                title="enter multiple to update valuation"
+                enterDelay={300}
+                leaveDelay={300}
+                placement="top-start"
+              >
 			    		<FormControl className={classes.formControl}>
 			          <Input
 			            id="adornment-amount"
-                  placeholder={this.state.highMultiple.toString()}
-			            value={this.state.highMultiple}
+                  placeholder={highMultiple.toString()}
+			            value={ formatMultiple(highMultiple, true) }
 			            onChange={this.handleChange('highMultiple')}
                   className={classes.changeInput}
 			            endAdornment={<InputAdornment position="end">x</InputAdornment>}
@@ -321,19 +351,20 @@ class ValuationSummary extends React.Component {
                   high
                 </FormHelperText>
 		        	</FormControl>
+              </Tooltip>
 	          </Grid>
-	          <EqualIcon color="primary" style={{ width: 36, height: 36 }} className={classes.mathSymbols} />
+	          <EqualIcon color="inherit" style={{ width: 36, height: 36 }} className={classes.mathSymbols} />
 	          <Grid item md={4} xs={12}>
 							<FormControl className={classes.formControl}>
-			          <InputLabel htmlFor="amount">{this.state.mode === 0 ? "Implied Valuation Range" : "Implied " + getFormattedMetric(this.props.selectedMetric, this.props.selectedYear)}</InputLabel>
+			          <InputLabel htmlFor="amount">{mode === 0 ? "Implied Valuation Range" : "Implied " + getFormattedMetric(this.props.selectedMetric, this.props.selectedYear)}</InputLabel>
 			          <Input
 			            id="adornment-amount"
 			            disabled={true}
                   inputComponent={NumberFormatCustom}
-			            value={isNaN(lowValue) ? '-' : (lowValue > 1000 ? (lowValue / 1000).toFixed(2) : Math.round(lowValue)) }
+			            value={ formatMetric(lowValue) }
 			            onChange={this.handleChange('amount')}
 			            startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                  endAdornment={<InputAdornment position="end">{lowValue > 1000 ? 'B' : 'M'}</InputAdornment>}
+                  endAdornment={<InputAdornment position="end">{formatSuffix(lowValue)}</InputAdornment>}
 			          />
 				      	<FormHelperText id="weight-helper-text">median</FormHelperText>
 		        	</FormControl>
@@ -341,11 +372,11 @@ class ValuationSummary extends React.Component {
 			          <Input
 			            id="adornment-amount"
 			            disabled={true}
-			            value={isNaN(highValue) ? '-' : (highValue > 1000 ? (highValue / 1000).toFixed(2) : Math.round(highValue))}
+			            value={formatMetric(highValue)}
                   inputComponent={NumberFormatCustom}
 			            onChange={this.handleChange('amount')}
 			            startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                  endAdornment={<InputAdornment position="end">{highValue > 1000 ? 'B' : 'M'}</InputAdornment>}
+                  endAdornment={<InputAdornment position="end">{formatSuffix(highValue)}</InputAdornment>}
 			          />
 				      	<FormHelperText id="weight-helper-text">high</FormHelperText>
 		        	</FormControl>

@@ -10,7 +10,7 @@ import SimilarStartups from '../companyDetail/similarStartups.js';
 import ErrorMessage from '../shared/errorMessage.js';
 import {Helmet} from "react-helmet";
 
-//const util = require('util'); //print an object
+const util = require('util'); //print an object
 
 const styles = theme => ({
 });
@@ -52,14 +52,15 @@ class SectorDetails extends React.Component {
     var sectorRef = db.collection('categories').doc(sectorID);
     return sectorRef.get()
     .then(doc => {
-      if (doc.exists) {
+      if (doc.data()) {
         var sector = doc.data();
-        var category = sector.type !== undefined ? Object.keys(sector.type)[0] : undefined;
+
+        var category = (this.props.location.state && this.props.location.state.selectedCategory) ? this.props.location.state.selectedCategory : Object.keys(sector.type)[0];
 
         this.setState({
           sector: sector,
           sectorID: sectorID,
-          selectedCategory: category,
+          selectedCategoryName: category,
           error: undefined
         })
 
@@ -102,13 +103,13 @@ class SectorDetails extends React.Component {
         });
         this.setState({ 
           compSet: compsList, 
-          selectedCategory: category
+          selectedCategoryName: category
         });
     })
     .catch(err => {
       this.setState({ 
         compSet: undefined, 
-        selectedCategory: undefined
+        selectedCategoryName: undefined
       });
     });
   }
@@ -131,7 +132,7 @@ class SectorDetails extends React.Component {
   }
 
  render() {
-    const { sector, compSet, selectedCategory, error } = this.state;
+    const { sector, compSet, selectedCategoryName, error } = this.state;
 
     if (error) {
       return (<ErrorMessage message="Sorry, we are not tracking this sector yet! Please try another" />);
@@ -147,7 +148,7 @@ class SectorDetails extends React.Component {
                   categories={!sector ? undefined : sector.type} 
                   handleDelete={this.handleDelete}
                   updateCompSet={this.getComps}
-                  selectedCategory={selectedCategory}
+                  selectedCategoryName={selectedCategoryName}
                   />
 
       <SectorStats compSet={compSet} />
@@ -157,11 +158,11 @@ class SectorDetails extends React.Component {
                     setMultiple={this.setMultiples} 
                     selectedMetric={this.state.selectedMetric} 
                     selectedYear={this.state.selectedYear} 
-                    selectedCategory={selectedCategory}
+                    selectedCategoryName={selectedCategoryName}
                     handleChange={this.handleChange} 
                     />
 
-      <SimilarStartups category={selectedCategory}
+      <SimilarStartups category={selectedCategoryName}
                        title='Selected Startups'
                     />                    
     </div>

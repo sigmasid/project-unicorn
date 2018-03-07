@@ -16,13 +16,40 @@ export const getFormattedMetric = (type, year, short) => {
   return '';
 }
 
-export const formatMetric = (metric) => {
-  return metric !== undefined ? (metric >= 10000 ? Math.round(metric / 1000) : (metric >= 1000 ? (metric / 1000).toFixed(1) : Math.round(metric) : 0)) : '-';
+export const parseValue = (metric) => {
+  return metric === '' ? 0 : metric.toString().includes('.') ? parseFloat(metric) * 1000 : parseFloat(metric.toString().replace(/,|-/gi,''));
+}
+
+export const formatMetric = (metric, isInput) => {
+  if (!metric) {
+    return ' ';
+  } else if (metric.toString().includes('.') && isInput) {
+    return metric;
+  } else if (parseFloat(metric) >= 10000) {
+    return Math.round(parseFloat(metric) / 1000);
+  } else if (metric >= 1000) {
+    return (parseFloat(metric) / 1000).toFixed(1);
+  } else {
+    return Math.round(parseFloat(metric));
+  }
+}
+
+export const formatMultiple = (metric, isInput) => {
+  if (!metric) {
+    return ' ';
+  } else if (metric.toString().includes('.') && isInput) {
+    //if number of digits after decimal is greater than 1 then round to 1 else just return the full number
+    return (metric.toString().split(".")[1].length > 1 ? parseFloat(metric).toFixed(1) : metric);
+  } else {
+    //it's a whole number so just return whole number
+    return parseFloat(metric.toString().replace(/,|-| /gi,''));
+  }
 }
 
 export const formatSuffix = (metric) => {
-  return metric !== undefined ? (metric >= 1000 ? 'B' : 'M') : null;    
+  return metric && metric >= 1000 ? 'B' : 'M';   
 }
+
 
 const multipleYear = [
   {

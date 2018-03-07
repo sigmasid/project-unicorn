@@ -57,8 +57,11 @@ const styles = theme => ({
   },
   sourceWrapper: {
     padding: '10px',
-    maxWidth: '30%',
-    textAlign: 'center'
+    textAlign: 'center',
+    width: '30%',
+    [theme.breakpoints.down('md')]: {
+      width: '75%'
+    },
   },
   gridList: {
     justifyContent: 'center'
@@ -110,12 +113,12 @@ class CompanyIntro extends React.Component {
   estimateButton = null;
 
   render() {
-    const { classes, company, puEstimate, impliedMetric, metric, multipleMidpoint, selectedCategory } = this.props;
+    const { classes, company, puEstimate, impliedMetric, metric, multipleMidpoint, selectedCategory, selectedMetric, selectedYear } = this.props;
     const lastValuation = company !== undefined ? company.lastValuation : undefined;
 
     const lastValuationDate = company !== undefined ? <Moment date={new Date(company.lastValuationDate - (25567 + 1))*86400*1000} format="MMM YYYY" /> : null;
-    const puEstimateMethodology = "Valuation based on "+getFormattedMetric(this.props.selectedMetric, this.props.selectedYear)+" of $"+(formatMetric(metric))+formatSuffix(metric)+" and midpoint of "+selectedCategory+" comps of "+multipleMidpoint+"x (see details on estimate & mutliple ranges below)"
-    const impliedMethodology = "What implied "+getFormattedMetric(this.props.selectedMetric, this.props.selectedYear)+" would need to be to justify current valuation of $"+formatMetric(lastValuation)+formatSuffix(lastValuation)+" based on midpoint of "+selectedCategory+" comps of "+multipleMidpoint+"x."
+    const puEstimateMethodology = "Valuation based on "+getFormattedMetric(selectedMetric, selectedYear)+" of $"+(formatMetric(metric))+formatSuffix(metric)+" and a midpoint multiple of "+multipleMidpoint+"x for "+selectedCategory+" comps range (see details on estimate & mutliple ranges below)";
+    const impliedMethodology = "Implied "+getFormattedMetric(selectedMetric, selectedYear)+" based on last post-money valuation of $"+formatMetric(lastValuation)+formatSuffix(lastValuation)+" and multiple of "+multipleMidpoint+"x for "+selectedCategory+" comps.";
 
     if (company === undefined) {
       return <Loading />

@@ -9,19 +9,34 @@ import { CircularProgress } from 'material-ui/Progress';
 import Snackbar from 'material-ui/Snackbar';
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
+import ReactGA from 'react-ga';
+import CheckIcon from 'material-ui-icons/Check';
+import classNames from 'classnames';
 
 const styles = theme => ({
   root: {
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 800,
     backgroundColor: theme.palette.background.paper,
     margin: '0 auto',
     marginTop: theme.spacing.unit * 3,
+    [theme.breakpoints.down('md')]: {
+      maxWidth: '100%',
+      marginTop: 0
+    }
   },
-  headerText: {
-    textAlign: 'center',
-    paddingTop: 20,
-    boxShadow: 'none'    
+  header: {
+    textAlign: 'left',
+    padding: '20px 20px 0px 40px',
+    boxShadow: 'none',
+    [theme.breakpoints.down('md')]: {
+      padding: '10px 10px 0px 20px'
+    }
+  },
+titleText: {
+    fontWeight: 800,
+    color: 'black',
+    marginBottom: 10
   },
   contactForm: {
     boxShadow: 'none',
@@ -31,6 +46,7 @@ const styles = theme => ({
   raisedButton: {
     color: 'white',
     marginTop: 30,
+    padding: '10px 30px 10px 30px',
     backgroundColor: theme.palette.primary[300],
     boxShadow: theme.shadows[2],
     '&:active': {
@@ -48,7 +64,7 @@ const styles = theme => ({
     color: 'white',
     position: 'absolute',
     top: '50%',
-    left: '5%',
+    left: '10%',
     marginTop: -12,
     marginLeft: -12,
   },
@@ -94,6 +110,11 @@ class Contact extends React.Component {
 				message: this.state.contactMessage,
 	    })
 	    .then(function() {
+        ReactGA.event({
+          category: 'Contact',
+          action: 'Sent',
+          label: 'Contact Request'
+        });
 	        self.setState(
 	          { 
 	            success: true, 
@@ -137,8 +158,8 @@ class Contact extends React.Component {
 
 	  return (
 	    <div className={classes.root}>
-        <Paper className={classes.headerText} >
-          <Typography type="title" gutterBottom>
+        <Paper className={classes.header} >
+          <Typography type="display3" className={classes.titleText}>
             Contact Us
           </Typography>
           <Typography type="caption" color={'textSecondary'} gutterBottom>
@@ -188,11 +209,13 @@ class Contact extends React.Component {
           	onChange={this.handleChange('contactMessage')}
 	        />
 
-          <Button size="large" className={classes.raisedButton} onClick={() => this.handleSubmit()} disabled={loading} >
+          <Button size="large" className={classNames(classes.button, classes.raisedButton)} onClick={() => this.handleSubmit()} disabled={loading} >
 		        Submit
-          {loading && <CircularProgress size={24} className={classes.buttonProgress} color={"white"} />}
+          {loading && <CircularProgress size={24} className={classes.buttonProgress} color="inherit" />}
+          {success && <CheckIcon size={24} className={classes.buttonProgress} color="inherit" />}
 		      </Button>
           <Snackbar
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             open={success}
             autoHideDuration={4000}
             onClose={this.handleClose}

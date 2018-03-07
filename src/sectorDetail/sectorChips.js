@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Chip from 'material-ui/Chip';
 import Paper from 'material-ui/Paper';
-import Typography from 'material-ui/Typography';
 import { CardActions } from 'material-ui/Card';
+import classNames from 'classnames';
+import Avatar from 'material-ui/Avatar';
 
 const styles = theme => ({
   root: {
@@ -12,7 +13,6 @@ const styles = theme => ({
     height: 'auto',
     textAlign: 'center',
     display: 'block',
-    maxWidth: '50%',
     [theme.breakpoints.down('md')]: {
       maxWidth: '100%'
     }
@@ -27,7 +27,6 @@ const styles = theme => ({
   selectedChip: {
     background: theme.palette.gradient,
     color: 'white',
-    margin: theme.spacing.unit,
     '&:hover, &:active, &:focus': {
       background: theme.palette.gradient,
       color: 'white',
@@ -39,6 +38,10 @@ const styles = theme => ({
   },
   chip: {
     margin: theme.spacing.unit,
+    fontSize: '1.0rem',
+    borderRadius: 32,
+    padding: theme.spacing.unit,
+    backgroundColor: theme.palette.background.default,
     '&:hover, &:active, &:focus': {
       background: theme.palette.gradient,
       color: 'white',
@@ -47,13 +50,17 @@ const styles = theme => ({
         backgroundColor: 'transparent',
       }
     }
+  },
+  chipAvatar: {
+    background: 'none',
+    fontSize: '1.5rem'
   }
 });
 
 class ChipsArray extends React.Component {
   handleClick = category => {
     
-    if (this.props.selectedCategory !== category) {
+    if (this.props.selectedCategoryName !== category) {
       this.props.updateCompSet(category);
     } 
 
@@ -63,15 +70,18 @@ class ChipsArray extends React.Component {
   };
 
   render() {
-    const { classes, categories, handleDelete } = this.props;
+    const { classes, categories, handleDelete, selectedCategoryName } = this.props;
 
     return (
       <CardActions className={classes.root}>
-        <Typography type="subheading" color="textSecondary">Industry Sectors</Typography>
         <Paper className={classes.paper}>
           {Object.keys(categories).map(category => {
             return (
-              <Chip key={category} onClick={() => this.handleClick(category)} label={category.toProperCase()} className={this.props.selectedCategory === category ? classes.selectedChip : classes.chip} />
+              <Chip key={category} 
+                    onClick={() => this.handleClick(category)} 
+                    label={category.toProperCase()} 
+                    avatar={selectedCategoryName === category ? <Avatar className={classes.chipAvatar}>{typeof categories[category].logo === 'string' ? categories[category].logo : category.charAt(0).toUpperCase()}</Avatar> : null}
+                    className={selectedCategoryName === category ? classNames(classes.selectedChip, classes.chip) : classes.chip} />
             );
           })}
         </Paper>

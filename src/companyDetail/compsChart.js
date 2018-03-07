@@ -33,13 +33,13 @@ class CompChart extends Component {
           borderDash: [5],
           radius: 0,
           hitRadius: 0,
-          borderColor: theme.palette.accent,
+          borderColor: 'black',
           backgroundColor: 'rgba(255,255,255,0.0)',
           datalabels: {
             display: function(context) {
               return context.dataIndex === (context.dataset.data.length - 1); // display labels for last one
             },
-            backgroundColor: theme.palette.accent,
+            backgroundColor: 'black',
             color: 'white',
             align: 'center',
             anchor: 'end',

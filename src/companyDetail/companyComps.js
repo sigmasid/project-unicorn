@@ -14,6 +14,7 @@ import { getFormattedMetric } from '../shared/sharedFunctions.js';
 import Loading from '../shared/loading.js';
 import Message from '../shared/message.js';
 import {SelectYear, SelectMetric} from '../shared/sharedFunctions.js';
+import classNames from 'classnames';
 
 import 'typeface-roboto';
 const util = require('util'); //print an object
@@ -38,7 +39,6 @@ const styles = theme => ({
   selectedChip: {
     background: theme.palette.gradient,
     color: 'white',
-    margin: theme.spacing.unit,
     '&:hover, &:active, &:focus': {
       background: theme.palette.gradient,
       color: 'white',
@@ -50,6 +50,10 @@ const styles = theme => ({
   },
   chip: {
     margin: theme.spacing.unit,
+    fontSize: '1.0rem',
+    borderRadius: 32,
+    padding: theme.spacing.unit,
+    backgroundColor: theme.palette.background.default,
     '&:hover, &:active, &:focus': {
       background: theme.palette.gradient,
       color: 'white',
@@ -167,7 +171,7 @@ function formatDate(dateIn) {
 class CompanyComps extends Component {
   constructor (props) {
     super(props);
-    const compData = (this.props.compSet !== undefined && this.props.compSet.length > 0) ? calcMultiples(this.props.compSet, this.props.selectedMetric, this.props.selectedYear) : undefined;
+    const compData = (this.props.compSet && this.props.compSet.length > 0) ? calcMultiples(this.props.compSet, this.props.selectedMetric, this.props.selectedYear) : undefined;
 
     this.state = { 
       selectedYear: this.props.selectedYear, 
@@ -175,19 +179,19 @@ class CompanyComps extends Component {
       compData: compData
     }
 
-    this.props.setMultiple(compData !== undefined ? compData.lowMultiple : undefined, compData !== undefined ? compData.highMultiple : undefined);
+    this.props.setMultiple(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);
     this.categories = this.categories.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.compSet !== undefined && nextProps.compSet !== this.props.compSet && nextProps.compSet.length > 0) {
-      const compData = (nextProps.compSet !== undefined && nextProps.compSet.length > 0) ? calcMultiples(nextProps.compSet, nextProps.selectedMetric, nextProps.selectedYear) : undefined;
+    if (nextProps.compSet && nextProps.compSet !== this.props.compSet && nextProps.compSet.length > 0) {
+      const compData = (nextProps.compSet && nextProps.compSet.length > 0) ? calcMultiples(nextProps.compSet, nextProps.selectedMetric, nextProps.selectedYear) : undefined;
 
       this.setState({
         compData: compData
       });
 
-      this.props.setMultiple(compData !== undefined ? compData.lowMultiple : undefined, compData !== undefined ? compData.highMultiple : undefined);      
+      this.props.setMultiple(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);      
     }
   }
 
@@ -232,7 +236,7 @@ class CompanyComps extends Component {
 
     var chips = Object.keys(this.props.categories).map(function(data, index) {
       return (
-          <Chip key={index} label={data.toProperCase()} onClick={() => self.handleClick(data)} className={self.props.selectedCategory === data ? classes.selectedChip : classes.chip} />
+          <Chip key={index} label={data.toProperCase()} onClick={() => self.handleClick(data)} className={self.props.selectedCategory === data ? classNames(classes.chip, classes.selectedChip) : classes.chip} />
         );
       })
     return(<div>{chips}</div>); 
