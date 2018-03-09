@@ -10,7 +10,7 @@ import SimilarStartups from '../companyDetail/similarStartups.js';
 import ErrorMessage from '../shared/errorMessage.js';
 import {Helmet} from "react-helmet";
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
 });
@@ -133,7 +133,6 @@ class SectorDetails extends React.Component {
 
  render() {
     const { sector, compSet, selectedCategoryName, error, sectorID } = this.state;
-    console.log('chips open is ' + this.state.chipsOpen);
 
     if (error) {
       return (<ErrorMessage message="Sorry, we are not tracking this sector yet! Please try another" />);
@@ -149,7 +148,7 @@ class SectorDetails extends React.Component {
                   handleDelete={this.handleDelete}
                   updateCompSet={this.getComps}
                   selectedCategoryName={selectedCategoryName}
-                  chipsOpen={this.props.location.state.chipsOpen}
+                  chipsOpen={this.props.location.state ? this.props.location.state.chipsOpen : false}
                   />
 
       <SectorStats compSet={compSet} />

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
@@ -13,6 +12,7 @@ import IconButton from 'material-ui/IconButton';
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import { CircularProgress } from 'material-ui/Progress';
+import Cookies from 'universal-cookie';
 
 const styles = theme => ({
   emailSignup: {
@@ -31,6 +31,7 @@ const styles = theme => ({
   emailSignupText: {
     alignSelf: 'center',
     marginBottom: 0,
+    whiteSpace: 'pre-wrap',
     [theme.breakpoints.down('md')]: {
       display: 'none'
     }
@@ -75,10 +76,12 @@ const styles = theme => ({
 class EmailSignup extends React.Component {
   constructor (props) {
     super(props);
-
+    const cookies = new Cookies();
     this.state = { 
-      emailCapture: this.props.showCapture
+      emailCapture: this.props.showCapture,
+      message: cookies.get('newUser') !== 'true' ? "Welcome to Project Unicorn! Browse the leaderboard or explore a sector to see detailed valuations.\nAnd there's a lot more coming. Stay in touch!" : "There's a lot more coming. Stay in touch!"
     }
+    //cookie values are string
 
     this.handleEmailSignup = this.handleEmailSignup.bind(this);
     this.handleEmailSignup = this.handleEmailSignup.bind(this);
@@ -115,9 +118,12 @@ class EmailSignup extends React.Component {
                 emailCapture: false,
                 success: undefined
               });
+              self.props.handleEmailToggle(false);
             }, 2000);
           },
         )
+        const cookies = new Cookies();
+        cookies.set('showEmailCapture', false, { path: '/' });
     })
     .catch(function(error) {
         // The document probably doesn't exist.
@@ -128,7 +134,7 @@ class EmailSignup extends React.Component {
 
   timer = undefined;
 
-  emailSignup = (classes, handleEmailToggle) => {
+  emailSignup = (classes, handleEmailToggle, message) => {
 
     return(
       <Paper className={classes.emailSignup} >
@@ -136,7 +142,7 @@ class EmailSignup extends React.Component {
           <CloseIcon />
         </Button>
         <Typography variant="subheading" gutterBottom className={classes.emailSignupText}>
-          { this.state.success ? "Success! Thanks for signing up!" : "There's a lot more coming. Stay in touch!" }
+          { this.state.success ? "Success! Thanks for signing up!" : message }
         </Typography>
         <FormControl className={classes.formControl}>
           <InputLabel htmlFor="email">Email</InputLabel>
@@ -166,7 +172,7 @@ class EmailSignup extends React.Component {
     const { classes } = this.props;
 
     return (
-      <div className={classes.emailWrapper}> { this.props.showCapture && this.emailSignup(classes, this.props.handleEmailToggle) }</div>
+      <div className={classes.emailWrapper}> { this.props.showCapture && this.emailSignup(classes, this.props.handleEmailToggle, this.state.message) }</div>
     );
   }
 }

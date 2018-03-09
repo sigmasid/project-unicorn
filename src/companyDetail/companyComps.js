@@ -17,7 +17,7 @@ import {SelectYear, SelectMetric} from '../shared/sharedFunctions.js';
 import classNames from 'classnames';
 
 import 'typeface-roboto';
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const maxRevenueMultiple = 20;
 const maxEBITDAMultiple = 75;

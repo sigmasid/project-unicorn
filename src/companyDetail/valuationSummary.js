@@ -16,7 +16,6 @@ import Icon from 'material-ui/Icon';
 import SvgIcon from 'material-ui/SvgIcon';
 import NumberFormat from 'react-number-format';
 import Tooltip from 'material-ui/Tooltip';
-import classNames from 'classnames';
 
 import { getFormattedMetric, formatMetric, formatSuffix, parseValue, formatMultiple } from '../shared/sharedFunctions.js';
 
@@ -220,13 +219,13 @@ class ValuationSummary extends React.Component {
   helperText = () => {
     var lowMultipleText = "Median of the selected comp range";
     var highMultipleText = "Highest multiple from the selected comp range.";
-    var sourceText = this.props.notes || undefined;
+    var sourceText = this.props.notes || (!this.props.metric ? "Sorry we don't have any estimates for this company" : undefined);
 
     return this.state.currentlyOpen === 'source' ? sourceText : (this.state.currentlyOpen === 'low' ? lowMultipleText : highMultipleText);
   }
 
   helpLink = () => {
-    return (this.state.currentlyOpen === 'source' && this.props.source1 !== undefined) ? this.props.source1 : null;
+    return (this.state.currentlyOpen === 'source' && this.props.source1) ? this.props.source1 : undefined;
   };
 
   render() {
@@ -255,7 +254,7 @@ class ValuationSummary extends React.Component {
                         >
                           <div className={classes.sourceWrapper}>
                             <Typography className={classes.typography} color={'textSecondary'} variant={'caption'} gutterBottom={true} >{ this.helperText() }</Typography>
-                            {this.helpLink() !== null ? 
+                            {this.helpLink() ? 
                               <Typography className={classes.typography} color={'secondary'} variant={'caption'} component={Link} to={this.props.source1} target="_blank">
                                 Reference
                               </Typography> : null

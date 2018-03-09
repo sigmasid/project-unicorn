@@ -1,13 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
-import ExpansionPanel, {
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-} from 'material-ui/ExpansionPanel';
 import Typography from 'material-ui/Typography';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
-import MethodologyItems from './methodology-items.js';
 import Paper from 'material-ui/Paper';
 import Items from './terms.json';
 

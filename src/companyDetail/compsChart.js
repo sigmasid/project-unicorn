@@ -7,12 +7,12 @@ function MultipleFormatter(value, context) {
   return (!value || value === 0) ? 'NM' : value.toFixed(1)+"x";
 }
 
-const styles = theme => ({
+const styles = () => ({
 });
 
 class CompChart extends Component {  
   render() {
-    const { theme, comps } = this.props;
+    const { comps } = this.props;
 		const data = (canvas) => {
 
 		return {
@@ -62,7 +62,7 @@ class CompChart extends Component {
               color: 'black',
               font: {
                 family: 'Roboto',
-                size: document.body.clientWidth > 600 ? 16 : 12 
+                size: document.body.clientWidth <= 600 || comps.length > 10 ? 12 : 16
               },
               formatter: MultipleFormatter
             }
@@ -91,7 +91,7 @@ class CompChart extends Component {
                   return value;
                 },
                 fontFamily: 'Roboto',
-                fontSize: document.body.clientWidth > 600 ? 16 : 12,
+                fontSize: document.body.clientWidth <= 600 || comps.length > 10 ? 12 : 16,
                 formatter: MultipleFormatter
               }
             }],
@@ -107,7 +107,7 @@ class CompChart extends Component {
                 maxRotation: document.body.clientWidth > 960 ? 0 : 90,
                 minRotation: document.body.clientWidth > 960 ? 0 : 90,
                 fontFamily: 'Roboto',
-                fontSize: document.body.clientWidth > 600 ? 16 : 12
+                fontSize: document.body.clientWidth <= 600 || comps.length > 10 ? 12 : 16
 							}
             }]
         	}

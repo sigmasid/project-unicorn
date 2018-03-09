@@ -17,7 +17,7 @@ import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import ReactGA from 'react-ga';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {

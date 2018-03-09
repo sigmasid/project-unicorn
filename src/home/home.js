@@ -163,7 +163,7 @@ class Home extends React.Component {
     super(props);
 
     this.state = {
-      selectedOrder: 'biggest',
+      selectedOrder: 'biggest'
     }
 
     this.getUnicorns = this.getUnicorns.bind(this);
@@ -214,7 +214,7 @@ class Home extends React.Component {
   }
 
   render() {
-    const { classes, } = this.props;
+    const { classes } = this.props;
     const { selectedOrder } = this.state;
     const orderOptions = [{name: 'biggest', emoji: "💪"}, {name: 'latest', emoji: "👶"}];
 
@@ -228,8 +228,8 @@ class Home extends React.Component {
                                   className={selectedOrder === obj.name ? classNames(classes.selectedChip, classes.chip) : classes.chip} />
                             );
                           })}
-                        </Paper>
-                      
+                        </Paper>;
+
     return (
       <div className={classes.root}>
         <Paper className={classes.header} >
@@ -247,7 +247,7 @@ class Home extends React.Component {
 }
 
 Home.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(Home);

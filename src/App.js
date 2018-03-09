@@ -23,6 +23,7 @@ import EmailSignup from './shared/emailCapture.js';
 import { MuiThemeProvider, createMuiTheme } from "material-ui/styles";
 import {lightBlue, red} from 'material-ui/colors';
 import {Helmet} from "react-helmet";
+import Cookies from 'universal-cookie';
 
 import {
   BrowserRouter as Router,
@@ -30,7 +31,7 @@ import {
   Route
 } from 'react-router-dom'
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 var config = {
   apiKey: "AIzaSyDqlpzydxlQyqhjWG5x4VWk8vK1Br4669Q",
@@ -90,6 +91,9 @@ const styles = theme => ({
   },
   'contentShift-right': {
     width: 'calc(100% - 300px)'
+  },
+  closeButton: {
+    color: 'white'
   }
 });
 
@@ -124,10 +128,16 @@ class App extends Component {
   constructor (props) {
     super(props);
 
+    const cookies = new Cookies();
     this.state = {
       open: false,
-      showCapture: true
+      showCapture: cookies.get('showEmailCapture') === undefined ? true : false,
+      newUser: cookies.get('newUser')
     };
+
+    if (!cookies.get('newUser')) {
+      cookies.set('newUser', false, { path: '/' });
+    }
 
     this.handleEmailToggle = this.handleEmailToggle.bind(this);
   }
@@ -178,7 +188,7 @@ class App extends Component {
   }
 
   render() {
-    const { open, featuredTickers } = this.state;
+    const { open, featuredTickers, newUser } = this.state;
     const { classes } = this.props;
 
     return (
@@ -203,7 +213,7 @@ class App extends Component {
               >
                 <AnalyticsTracker />
                 <Switch>
-                  <Route exact path="/" render={(props) => (<Home setFeatured={this.setFeatured} featuredTickers={featuredTickers} />)} />
+                  <Route exact path="/" render={(props) => (<Home setFeatured={this.setFeatured} />)} />
                   <Route exact path="/methodology" component={Methodology}/>
                   <Route exact path="/explore" component={Explore}/>                  
                   <Route exact path="/contact" component={Contact}/>       
@@ -214,7 +224,7 @@ class App extends Component {
                 </Switch>
               </main>
             </div>
-            <EmailSignup showCapture={this.state.showCapture} handleEmailToggle={this.handleEmailToggle} />
+            <EmailSignup showCapture={this.state.showCapture} handleEmailToggle={this.handleEmailToggle} newUser={newUser} />
             <BottomNav handleEmailToggle={this.handleEmailToggle} />
           </div>
         </MuiThemeProvider>
