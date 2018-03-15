@@ -200,7 +200,7 @@ class App extends Component {
               defaultTitle="Project Unicorn"
               titleTemplate="%s | Project Unicorn"
             >
-              <meta name="description" content="Private Technology Startup Valuations & Public Market Valuation and Operating Statistics" />          
+              <meta name="description" content="Private Startup and Unicorn Valuations, Public Technology Sector Valuations and Operating Statistics" />          
             </Helmet>
             <div className={classes.appFrame}>
               <TopNav title="" hidden={this.state.open} handleDrawerOpen={this.handleDrawerOpen} open={this.state.open} dataSource={this.state.searchResults} />

@@ -73,7 +73,7 @@ class CompChart extends Component {
           layout: {
             padding: {
                 left: 0,
-                right: 0,
+                right: document.body.clientWidth > 600 ? 0 : 25,
                 top: 50,
                 bottom: 0
             }

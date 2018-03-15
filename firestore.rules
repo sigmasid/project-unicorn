@@ -1,7 +1,32 @@
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write;
+    match /categories/{categoryID} {
+      allow read;
+      allow write: if request.auth.uid != null;
     }
+    match /indices/{indexID} {
+      allow read;
+      allow write: if request.auth.uid != null;
+    }
+    match /private/{privateID} {
+      allow read;
+      allow write: if request.auth.uid != null;
+    }    
+    match /public/{publicID} {
+      allow read;
+      allow write: if request.auth.uid != null;
+    }       
+    match /categories/{categoryID} {
+      allow read;
+      allow write: if request.auth.uid != null;
+    }
+    match /contact/{contactID} {
+      allow read: if request.auth.uid != null;
+      allow write: if resource.data.email != null;
+    }
+    match /signups/{signupID} {
+      allow read: if request.auth.uid != null;    
+      allow write: if resource.data.email != null;
+    }      
   }
 }

@@ -183,23 +183,6 @@ class CompanyIntro extends React.Component {
                 subtitle: classes.subtitle
               }}
             />
-          </GridListTile>  
-          <GridListTile key={3} className={classes.statTile}>
-            <Avatar className={classes.tileAvatar}>
-              { impliedMetric ? <NumberFormat value={formatMetric(impliedMetric)} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(impliedMetric)}  /> : '-'}
-            </Avatar>          
-            <GridListTileBar
-              title={"Implied "+getFormattedMetric(this.props.selectedMetric, this.props.selectedYear, true)}
-              id="implied"
-              ref={node => { this.impliedButton = node;}}
-              subtitle={window.innerWidth < 960 ? "Learn More" : "how is this calculated?"}
-              onClick={() => this.handleOpen('implied')}
-              classes={{
-                root: classes.titleBar,
-                title: classes.title,
-                subtitle: classes.subtitle
-              }}
-            />
           </GridListTile>
         </GridList>
         { showMethodology }

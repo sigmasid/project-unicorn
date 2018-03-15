@@ -108,6 +108,7 @@ class Contact extends React.Component {
 	      name: this.state.contactName,
 				email: this.state.contactEmail,
 				message: this.state.contactMessage,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
 	    })
 	    .then(function() {
         ReactGA.event({
@@ -134,7 +135,10 @@ class Contact extends React.Component {
 	        )
 	    })
 	    .catch(function(error) {
-	        console.error("Error updating document: ", error);
+        this.setState({
+          loading: false,
+          success: undefined
+        });
 	    });
 	  } else {
 			this.setState({

@@ -17,7 +17,7 @@ import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import ReactGA from 'react-ga';
 
-//const util = require('util'); //print an object
+const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -204,6 +204,7 @@ class Explore extends React.Component {
 
     indicesRef.get()
     .then(doc => {
+        console.log('response is '+util.inspect(doc.data()));
         var catObj = doc.data();
         var sorted = Object.keys(catObj).sort(function(a, b) { return catObj[a].rank - catObj[b].rank  });
         this.setState({ categories: sorted,
@@ -213,6 +214,7 @@ class Explore extends React.Component {
         this.getCategories(sorted[0]);
     })
     .catch(err => {
+      console.log('response is '+util.inspect(err));
       this.setState({ 
         categories: undefined
       });

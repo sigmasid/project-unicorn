@@ -20,17 +20,26 @@ const styles = theme => ({
   },
   titleBar: {
     background: 'none',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   title: {
-    color: 'black'
+    color: 'black',
+    whiteSpace: 'pre-wrap',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem',
+      lineHeight: '20px'
+    },
   },
   avatar: {
     width: 100,
     height: 100,
     color: '#fff',
     backgroundColor: 'black',
-    margin: '0 auto'
+    margin: '0 auto',
+    [theme.breakpoints.down('md')]: {
+      width: 75,
+      height: 75
+    }
   }
 });
 
@@ -123,8 +132,8 @@ const StatOutput = (classes, compSet) => {
       <GridListTile key={2} className={classes.statTile}>
         <Avatar className={ classes.avatar }><NumberFormat value={Math.round(sectorValues.revGrowth * 100)} displayType={'text'} suffix={'%'}/></Avatar>
         <GridListTileBar
-          title="Forward Rev Growth %"
-          subtitle="CY2017 - CY2018E"
+          title={document.body.clientWidth > 600 ? "Forward Rev Growth %" : "Fwd Rev Growth"} 
+          subtitle={document.body.clientWidth > 600 ? "CY2017 - CY2018E" : "CY17E - 18E"}
           classes={{
             root: classes.titleBar,
             title: classes.title,

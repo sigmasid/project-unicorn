@@ -103,7 +103,8 @@ class EmailSignup extends React.Component {
     this.setState({ loading: true })
 
     return emailRef.add({
-      email: this.state.email
+      email: this.state.email,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
     })
     .then(function() {
         self.setState(
