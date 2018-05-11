@@ -22,11 +22,11 @@ service cloud.firestore {
     }
     match /contact/{contactID} {
       allow read: if request.auth.uid != null;
-      allow write: if resource.data.email != null;
+      allow write: if request.resource.data.email is string;
     }
     match /signups/{signupID} {
       allow read: if request.auth.uid != null;    
-      allow write: if resource.data.email != null;
+      allow write: if request.resource.data.email is string;
     }      
   }
 }

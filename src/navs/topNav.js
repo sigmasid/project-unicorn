@@ -1,28 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import * as firebase from "firebase";
-import firestore from "firebase/firestore";
 import classNames from 'classnames';
-
 import { withStyles } from 'material-ui/styles';
+import { findDOMNode } from 'react-dom';
+
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
-import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import SearchIcon from 'material-ui-icons/Search';
 import CloseIcon from 'material-ui-icons/Close';
-import ExploreIcon from 'material-ui-icons/Explore';
-
 import SearchBar from 'material-ui-search-bar';
-import Paper from 'material-ui/Paper';
-import Grow from 'material-ui/transitions/Grow';
 import Avatar from 'material-ui/Avatar';
-import { Link } from 'react-router-dom';
-import { MenuItem, MenuList} from 'material-ui/Menu';
-import { findDOMNode } from 'react-dom';
-import 'typeface-roboto';
 
-//const util = require('util') //print an object
+import MobileNav from './mobileNav.js';
+import RenderSuggestionsContainer from '../shared/searchSuggestions.js';
+
+const util = require('util') //print an object
 
 const styles = theme => ({
   appBar: {
@@ -95,8 +88,7 @@ const styles = theme => ({
   },
   searchSuggestions: {
     width: '50%',
-    marginRight: 50,
-    marginLeft: 50,
+    margin: '0 auto',
     [theme.breakpoints.down('md')]: {
       width: '100%',
       marginRight: 0,
@@ -105,7 +97,10 @@ const styles = theme => ({
   },
   mobileSearch: {
     display: 'none'
-  }, 
+  },
+  menuItem: {
+    height: 48
+  },
   suggestionsList: {
     position: 'absolute',
     top: '10px',
@@ -118,94 +113,20 @@ const styles = theme => ({
   }
 });
 
-function getSuggestions(value, index) {
-  const inputValue = value.trim().toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
-  
-  return inputLength === 0
-    ? []
-    : index.filter(result => {
-        const keep =
-          count < 5 && result.label.toLowerCase().slice(0, inputLength) === inputValue;
-
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
-
-function RenderSuggestionsContainer(props) {
-  const { results, anchorEl, handleClose, classes } = props;
-  if (results === undefined || results.length === 0) {
-    return null;
-  }
-
-  return (
-    <Grow in={Boolean(anchorEl)} id="menu-list" style={{ transformOrigin: '0 0 0' }}>
-    <Paper>
-      <MenuList
-        role="menu"
-        className={classes.suggestionsList}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        { results !== undefined ? 
-            results.map(function(result, index) {
-              return <MenuItem component={Link} to={'/c/'+result.key} key={index} onClick={handleClose}>{result.label}</MenuItem>
-            }) : null }
-      </MenuList>
-    </Paper>
-    </Grow>
-  );
-}
-
 class TopNav extends React.Component {
   state = {
     anchorEl: null,
-    searchOpen: false
+    searchOpen: false,
+    menuOpen: false
   };
 
-  handleChange = (value) => {
-    if (this.state.index === undefined) {
-      var db = firebase.firestore();
-      db.collection('indices').doc('private').get().then(doc => {
-        let index = [];
-        var tickers = doc.data().tickers;
-
-        Object.keys(tickers).map(function(key) {
-          var current = {};
-          current.key = key;
-          current.label = tickers[key];
-          index.push(current);
-          return null;
-        });
-
-        getSuggestions(value, index)
-        this.setState({
-          index: index,
-          anchorEl: findDOMNode(!this.state.searchOpen ? this.button : this.mobileSearch),
-          results: getSuggestions(value, index),
-          searchText: value
-        });
-        return null;
-      })
-      .catch(err => {
-        this.setState({ 
-          unicornList: undefined
-        });
-      }); 
-    } else {
-      getSuggestions(value, this.state.index)
-      this.setState({
-        anchorEl: findDOMNode(this.button),
-        results: getSuggestions(value, this.state.index),
-        searchText: value
-      });
-      return null;
-    }
+  handleChange = (value) => {    
+    this.setState({
+      anchorEl: findDOMNode(this.button),
+      results: this.props.getSuggestions(value),
+      searchText: value
+    });
+    return null;
   };
 
   handleClose = () => {
@@ -215,6 +136,12 @@ class TopNav extends React.Component {
       searchText: ''
     });
   }
+
+  toggleDrawer = () => {
+    this.setState({
+      menuOpen: !this.state.menuOpen
+    });
+  };
 
   showSearch = () => {
     this.setState({
@@ -226,26 +153,20 @@ class TopNav extends React.Component {
   mobileSearch = null;
 
   render() {
-    const { classes } = this.props;
-    const { searchOpen } = this.state;
+    const { classes  } = this.props;
+    const { searchOpen, results, menuOpen } = this.state;
 
     return (
-    <AppBar className={classNames(classes.appBar, this.props.open && classes.appBarShift)}>
+    <AppBar className={classes.appBar}>
       <Toolbar className={classes.toolbar}>
         <div className={classes.desktopMenu}>
           <IconButton onClick={this.props.handleDrawerOpen} color="inherit" aria-label="open drawer" >
             <Avatar alt="Project Unicorn" className={classNames(classes.avatar, classes.bigAvatar)}><span className={classes.emoji} role="img" aria-label="Company Logo">🦄</span></Avatar>
           </IconButton>
-          <Button aria-label="leaderboard" component={Link} to={'/'}  className={classes.navButton} color="default" size="large">
-            Leaderboard
-          </Button>
-          <Button aria-label="explore" component={Link} to={'/explore'} className={classes.navButton} color="default" size="large">
-            Explore
-          </Button>
           <div className={classes.searchSuggestions}>
             <SearchBar
               ref={node => { this.button = node;}}
-              placeholder='Search Unicorns'
+              placeholder='Search Companies'
               onChange={ (value) => this.handleChange(value) }
               onRequestSearch={ this.handleChange.bind(null) }
               className={classes.searchBar}
@@ -255,21 +176,19 @@ class TopNav extends React.Component {
               }}
               value={this.state.searchText}
             />
-            <RenderSuggestionsContainer results={this.state.results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} classes={classes} />
+            <RenderSuggestionsContainer results={results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} />
           </div>           
         </div>
         <div className={classes.mobileMenu}>
-          <IconButton color="inherit" aria-label="home" size="large" className={ classes.mobileButton } component={Link} to={'/'} >
+          <IconButton color="inherit" aria-label="home" size="large" className={ classes.mobileButton } onClick={() => this.toggleDrawer(true)} >
             <Avatar alt="Project Unicorn" className={classNames(classes.avatar, classes.bigAvatar)}><span className={classes.emoji} role="img" aria-label="Company Logo">🦄</span></Avatar>
-          </IconButton>        
-          <IconButton color="inherit" aria-label="explore" size="large" className={classNames(classes.mobileButton )} component={Link} to={'/explore'} >
-            <ExploreIcon />
           </IconButton>
           <IconButton color="inherit" aria-label="search" size="large" className={classNames(classes.mobileButton )} onClick={this.showSearch}>
             {searchOpen ? <CloseIcon /> : <SearchIcon />}
           </IconButton>
         </div>
       </Toolbar>
+      <MobileNav menuOpen={menuOpen} toggleDrawer={() => this.toggleDrawer} />
       <div className={classNames(classes.searchSuggestions, !this.state.searchOpen && classes.mobileSearch)}>
         <SearchBar
           ref={node => { this.mobileSearch = node;}}
@@ -283,7 +202,7 @@ class TopNav extends React.Component {
           }}
           value={this.state.searchText}
         />
-        <RenderSuggestionsContainer results={this.state.results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} classes={classes} />
+        <RenderSuggestionsContainer results={this.state.results} anchorEl={this.state.anchorEl} handleClose={this.handleClose} />
       </div>
     </AppBar>
     );
@@ -292,6 +211,7 @@ class TopNav extends React.Component {
 
 TopNav.propTypes = {
   classes: PropTypes.object.isRequired,
+  getSuggestions: PropTypes.func.isRequired
 };
 
 export default withStyles(styles)(TopNav);

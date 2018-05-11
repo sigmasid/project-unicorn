@@ -71,7 +71,7 @@ function Terms(props) {
   return (
   <div className={classes.root}>
     <Paper className={classes.header} >
-      <Typography type="display3" className={classes.titleText}>
+      <Typography variant="display3" className={classes.titleText}>
         Terms & Conditions
       </Typography>
     </Paper>

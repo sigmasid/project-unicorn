@@ -163,10 +163,10 @@ class Contact extends React.Component {
 	  return (
 	    <div className={classes.root}>
         <Paper className={classes.header} >
-          <Typography type="display3" className={classes.titleText}>
+          <Typography variant="display3" className={classes.titleText}>
             Contact
           </Typography>
-          <Typography type="caption" color={'textSecondary'} gutterBottom>
+          <Typography variant="caption" color={'textSecondary'} gutterBottom>
             suggestions, comments, contributions, hate mail etc.
           </Typography>
         </Paper>

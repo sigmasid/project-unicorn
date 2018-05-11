@@ -192,7 +192,7 @@ function SectorStats(props) {
     <Card className={classes.card}>
       <CardHeader 
         title="Operating Statistics"
-        subheader="Median Stats for Public Companies"
+        subheader="Metrics for Companies in Comp Set"
         className={classes.header}             
       />
       {StatOutput(classes, compSet)}          

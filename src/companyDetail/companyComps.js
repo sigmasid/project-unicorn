@@ -10,18 +10,13 @@ import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 
 import CompsChart from './compsChart.js';
-import { getFormattedMetric } from '../shared/sharedFunctions.js';
+import { getFormattedMetric, getPriorYear, maxRevenueMultiple, maxEBITDAMultiple, maxPEMultiple, SelectYear, SelectMetric } from '../shared/sharedFunctions.js';
 import Loading from '../shared/loading.js';
 import Message from '../shared/message.js';
-import {SelectYear, SelectMetric} from '../shared/sharedFunctions.js';
 import classNames from 'classnames';
 
 import 'typeface-roboto';
 //const util = require('util'); //print an object
-
-const maxRevenueMultiple = 20;
-const maxEBITDAMultiple = 75;
-const maxPEMultiple = 100;
 
 const styles = theme => ({
   card: {
@@ -95,6 +90,9 @@ const calcMultiples = (compSet, metric, year) => {
     } else if (metric === 'eps' && !isNaN(currentCompany[metric+'_'+year])) {
       var _multiple3 = currentCompany.last_price / currentCompany[metric+'_'+year];
       comps[currentCompany.name] = _multiple3 > maxPEMultiple || _multiple3 < 0 ? 0 : _multiple3;                 
+    } else if (metric === 'rev_growth' && !isNaN(currentCompany['rev_'+year])) {
+      var _growth = (currentCompany['rev_'+year] / currentCompany['rev_'+getPriorYear(year)] - 1) * 100;
+      comps[currentCompany.name] = _growth > maxPEMultiple || _growth < -50 ? 0 : _growth;                 
     }
 
     if ((lastUpdate === undefined && currentCompany.last_price_update !== undefined) || (currentCompany.last_price_update !== undefined && lastUpdate !== undefined && currentCompany.last_price_update > lastUpdate)) {
@@ -179,8 +177,12 @@ class CompanyComps extends Component {
       compData: compData
     }
 
-    this.props.setMultiple(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);
+    if (this.props.setMultipleRange) {
+      this.props.setMultipleRange(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);
+    }
     this.categories = this.categories.bind(this);
+    this.getStatType = this.getStatType.bind(this);
+    this.getStatSymbol = this.getStatSymbol.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -191,7 +193,9 @@ class CompanyComps extends Component {
         compData: compData
       });
 
-      this.props.setMultiple(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);      
+      if (this.props.setMultipleRange) {
+        this.props.setMultipleRange(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);
+      }
     }
   }
 
@@ -206,7 +210,9 @@ class CompanyComps extends Component {
     });
 
     //update parent
-    this.props.setMultiple(newCompData.lowMultiple, newCompData.highMultiple);
+    if (this.props.setMultipleRange) {
+      this.props.setMultipleRange(newCompData.lowMultiple, newCompData.highMultiple);
+    }
     this.props.handleChange(name, event.target.value);
   };
 
@@ -234,18 +240,34 @@ class CompanyComps extends Component {
       return null;
     }
 
-    var chips = Object.keys(this.props.categories).map(function(data, index) {
+    var chips = this.props.categories.map(function(key, index) {
       return (
-          <Chip key={index} label={data.toProperCase()} onClick={() => self.handleClick(data)} className={self.props.selectedCategory === data ? classNames(classes.chip, classes.selectedChip) : classes.chip} />
+          <Chip key={index} label={key.toProperCase()} onClick={() => self.handleClick(key)} className={self.props.selectedCategory === key ? classNames(classes.chip, classes.selectedChip) : classes.chip} />
         );
       })
     return(<div>{chips}</div>); 
   }
 
+  getStatType = (metric) => {
+    if (metric === 'rev_growth') {
+      return " Growth %";
+    } else {
+      return " Multiples";
+    }
+  }
+
+  getStatSymbol = (metric) => {
+    if (metric === 'rev_growth') {
+      return "%";
+    } else {
+      return "x";
+    }    
+  }
+
   render() {
     const { classes, theme, title, categories } = this.props;
-    const {compData} = this.state;
-    const chartSubtitle = getFormattedMetric(this.state.selectedMetric, this.state.selectedYear) + ' Multiples';
+    const {compData, selectedMetric, selectedYear} = this.state;
+    const chartSubtitle = getFormattedMetric(selectedMetric, selectedYear) + this.getStatType(selectedMetric);
     var lastUpdate = compData ? formatDate(new Date(compData.lastUpdate)) : null;
 
     return(
@@ -255,7 +277,7 @@ class CompanyComps extends Component {
         <CardContent className={classes.cardContent} >
           <Grid container className={classes.root}>
             <Grid item xs={12}>
-              {categories === undefined ? null : <Typography type="subheading" color="textSecondary">Comparables Categories</Typography> }
+              {categories === undefined ? null : <Typography variant="subheading" color="textSecondary">Comparables Categories</Typography> }
               <div>{ this.categories(classes) }</div>
             </Grid>
 
@@ -268,11 +290,11 @@ class CompanyComps extends Component {
               </Grid>
             </Grid>
           </Grid>
-          { compData !== undefined && compData.comps.length > 0 ? <CompsChart comps={compData.comps} median={compData.median} /> : <Loading /> }
+          { compData !== undefined && compData.comps.length > 0 ? <CompsChart comps={compData.comps} median={compData.median} symbol={this.getStatSymbol(selectedMetric)} /> : <Loading /> }
         </CardContent>
         <CardActions className={classes.footer} >
           <Divider className={classes.footerDivider} />
-          <Typography type="caption" color={'textSecondary'} gutterBottom>
+          <Typography variant="caption" color={'textSecondary'} gutterBottom>
             Note: Pricing data as of { lastUpdate }.
           </Typography>
         </CardActions>

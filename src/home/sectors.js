@@ -121,7 +121,7 @@ const Categories = (classes, selectedCategory, selectedCategoryName) => {
         var chipsOpen = selectedCategoryName === 'technology' ? true : false;
         
         return(
-        <Link to={{ pathname: '/s/'+categoryLink, state: { selectedCategory: selectedCategoryLink, chipsOpen: chipsOpen } }} key={category} className={classes.link} >
+        <Link to={{ pathname: '/sectors/'+categoryLink, state: { selectedCategory: selectedCategoryLink, chipsOpen: chipsOpen } }} key={category} className={classes.link} >
           <ListItem button key={category} >
             <Avatar className={classes.avatar}>{typeof selectedCategory[category].logo === 'string' ? selectedCategory[category].logo : category.charAt(0).toUpperCase()}</Avatar>
             <ListItemText primary={category.toProperCase()} />
@@ -204,7 +204,6 @@ class Explore extends React.Component {
 
     indicesRef.get()
     .then(doc => {
-        console.log('response is '+util.inspect(doc.data()));
         var catObj = doc.data();
         var sorted = Object.keys(catObj).sort(function(a, b) { return catObj[a].rank - catObj[b].rank  });
         this.setState({ categories: sorted,
@@ -214,7 +213,6 @@ class Explore extends React.Component {
         this.getCategories(sorted[0]);
     })
     .catch(err => {
-      console.log('response is '+util.inspect(err));
       this.setState({ 
         categories: undefined
       });
@@ -228,8 +226,8 @@ class Explore extends React.Component {
     return (
       <div className={classes.root}>
         <Paper className={classes.header} >
-          <Typography type="display3" className={classes.titleText}>
-            Explore
+          <Typography variant="display3" className={classes.titleText}>
+            Sectors
           </Typography>
           { categories && CategoryChips(classes, categories, this.handleChange, selectedCategoryName, categoriesObj )}
         </Paper>

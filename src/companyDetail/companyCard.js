@@ -2,16 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Card, { CardContent, CardHeader } from 'material-ui/Card';
-import GridList, { GridListTile, GridListTileBar } from 'material-ui/GridList';
 import NumberFormat from 'react-number-format';
 import Loading from '../shared/loading.js';
 import Avatar from 'material-ui/Avatar';
-import Moment from 'react-moment';
 import classNames from 'classnames';
-import Popover from 'material-ui/Popover';
 import Typography from 'material-ui/Typography';
 import { findDOMNode } from 'react-dom';
-import { getFormattedMetric, formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
+import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
 //const util = require('util'); //print an object
 
 const styles = theme => ({
@@ -32,10 +29,6 @@ const styles = theme => ({
       maxWidth: '100%'
     }
   },
-  titleBar: {
-    background: 'none',
-    textAlign: 'center',
-  },
   title: {
     color: 'black',
     marginLeft: 0,
@@ -46,22 +39,13 @@ const styles = theme => ({
       lineHeight: '20px'
     },
   },
-  subtitle: {
-    color: theme.palette.primary.light,
-    whiteSpace: 'normal',
-    cursor: 'pointer'
-  },
-  subtitleNoLink: {
-    color: 'rgba(0,0,0,0.54)',
-    whiteSpace: 'normal'
-  },
-  sourceWrapper: {
-    padding: '10px',
+  description: {
     textAlign: 'center',
-    width: '30%',
-    [theme.breakpoints.down('md')]: {
-      width: '75%'
-    },
+    maxWidth: '50%',
+    margin: '0 auto',
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: '100%'
+    }    
   },
   gridList: {
     justifyContent: 'center'
@@ -73,8 +57,8 @@ const styles = theme => ({
       width: 75,
       height: 75
     },
-    color: '#fff',
-    backgroundColor: 'black',
+    color: 'black',
+    backgroundColor: 'white',
     margin: '0 auto'
   }
 });
@@ -107,34 +91,18 @@ class CompanyIntro extends React.Component {
     });    
   }
 
-
-
   impliedButton = null;
   estimateButton = null;
 
   render() {
-    const { classes, company, puEstimate, impliedMetric, metric, multipleMidpoint, selectedCategory, selectedMetric, selectedYear } = this.props;
+    const { classes, company } = this.props;
     const lastValuation = company !== undefined ? company.lastValuation : undefined;
-
-    const lastValuationDate = company !== undefined ? <Moment date={new Date(company.lastValuationDate - (25567 + 1))*86400*1000} format="MMM YYYY" /> : null;
-    const puEstimateMethodology = "Valuation based on "+getFormattedMetric(selectedMetric, selectedYear)+" of $"+(formatMetric(metric))+formatSuffix(metric)+" and a midpoint multiple of "+multipleMidpoint+"x for "+selectedCategory+" comps range (see details on estimate & mutliple ranges below)";
-    const impliedMethodology = "Implied "+getFormattedMetric(selectedMetric, selectedYear)+" based on last post-money valuation of $"+formatMetric(lastValuation)+formatSuffix(lastValuation)+" and multiple of "+multipleMidpoint+"x for "+selectedCategory+" comps.";
 
     if (company === undefined) {
       return <Loading />
     }
-  
-    var showMethodology = <Popover open={this.state.currentlyOpen !== null} anchorEl={this.state.anchorEl} anchorReference='anchorEl' onClose={this.handleClose}
-                                  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                                  transformOrigin={{ vertical: 'bottom', horizontal: 'center'}}
-                                  elevation={2}
-                                  classes={{
-                                    paper: classes.sourceWrapper
-                                  }} >
-                                    <Typography className={classes.typography} color={'textSecondary'} variant={'caption'} gutterBottom={true} >
-                                      {this.state.currentlyOpen === 'estimate'  ? puEstimateMethodology : impliedMethodology }
-                                    </Typography>
-                        </Popover>;
+
+    var lastValuationText = <span className={classes.description}>Last Round: <NumberFormat value={formatMetric(lastValuation)} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(lastValuation)} /></span>;
 
     return (
     <div>
@@ -148,44 +116,11 @@ class CompanyIntro extends React.Component {
         </div>
         <CardHeader 
           title={company.name.toProperCase()}
-          subheader={company.description}
+          subheader={lastValuationText}
           className={classes.header}             
         />
         <CardContent>
-        <GridList cellHeight={window.innerWidth < 960 ? 150 : 180} className={classes.gridList} cols={window.innerWidth < 960 ? 3 : 6}>
-          <GridListTile key={1} className={classes.statTile}>
-            <Avatar className={classes.tileAvatar}>
-              <NumberFormat value={formatMetric(lastValuation)} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(lastValuation)} />
-            </Avatar>
-            <GridListTileBar
-              title="Last Round"
-              subtitle={lastValuationDate}
-              classes={{
-                root: classes.titleBar,
-                title: classes.title,
-                subtitle: classes.subtitleNoLink
-              }}
-            />
-          </GridListTile>
-          <GridListTile key={2} className={classes.statTile}>
-            <Avatar className={classes.tileAvatar}>
-              { puEstimate ? <NumberFormat value={formatMetric(puEstimate)} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(puEstimate)}  /> : '-'}
-            </Avatar>
-            <GridListTileBar
-              title="pu Estimate"
-              id="estimate"
-              ref={node => { this.estimateButton = node;}}
-              subtitle={window.innerWidth < 960 ? "Learn More" : "how is this calculated?"}
-              onClick={() => this.handleOpen('estimate')}
-              classes={{
-                root: classes.titleBar,
-                title: classes.title,
-                subtitle: classes.subtitle
-              }}
-            />
-          </GridListTile>
-        </GridList>
-        { showMethodology }
+          <Typography className={classes.description}>{company.description}</Typography>
         </CardContent>
       </Card>
     </div>

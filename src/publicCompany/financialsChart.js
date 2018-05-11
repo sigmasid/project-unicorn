@@ -2,66 +2,72 @@ import React, { Component } from 'react'
 import { Bar } from 'react-chartjs-2';
 import 'chartjs-plugin-datalabels';
 import { withStyles } from 'material-ui/styles';
+import { colorsArray } from '../shared/sharedFunctions.js';
+
+const util = require('util'); //print an object
 
 const styles = () => ({
 });
 
-class CompChart extends Component {
+class FinancialsChart extends Component {
   
   constructor (props) {
     super(props);
+    var newArray = (props.chartData[Object.keys(props.chartData)[0]].financials.financials).slice();
+
     this.state = {
-      shouldRedraw: false
+      shouldRedraw: false,
+      chartData: newArray.reverse()
     }
   }
     
   componentWillReceiveProps(nextProps){
-    if(nextProps.symbol !== this.props.symbol){
-      this.setState({shouldRedraw: true})
-    } else {
-      this.setState({shouldRedraw: false})
-    }
+    //check redraw
+  }
+
+  getChartLabels() {
+    const { chartData } = this.state;
+
+    return chartData.map( dataPoint => { 
+      return dataPoint.reportDate;
+    });
+  }
+
+  getChartDataset(type) {
+    const { chartData, unit } = this.props;
+
+    return Object.keys(chartData).map((ticker, index) => {
+      //reverse does in place - so copy array by value first
+      var currentStockFinancials = chartData[ticker].financials.financials.slice();
+      var dataPoints = (currentStockFinancials.reverse()).map( dataPoint => { return dataPoint[type] / unit });
+
+      return {
+        label: ticker,
+        data: dataPoints,
+        borderColor: colorsArray[index],
+        backgroundColor: colorsArray[index],
+        datalabels: {
+          display: true,
+          color: 'black',
+          align: 'end',
+          anchor: 'end',
+          formatter: function(value, context) {
+            return '$'+value.toFixed(1);
+          }
+        }
+      }
+    });    
   }
 
   render() {
-    const { comps, symbol } = this.props;
-		const data = (canvas) => {
+    const { selectedMetric } = this.props;
 
-		return {
-			labels: comps.map(function(index) { return (comps.length > 10 && document.body.clientWidth > 960 ? (index[0].toProperCase()).split(' ') : index[0].toProperCase() )}),
+    const data = (canvas) => {
+    return {
+      labels: this.getChartLabels(),
       type: 'bar',
-		  datasets: 
-      [{
-      	label: 'Company Mutliples',
-	      data: comps.map(function(index) { return index[1] }),
-        datalabels: {
-          align: 'end',
-          anchor: 'end'
-        }},
-        {
-          label: 'Comp Median',
-          data: Array(comps.length).fill(this.props.median),
-          type: 'line',
-          borderDash: [5],
-          radius: 0,
-          hitRadius: 0,
-          borderColor: 'black',
-          backgroundColor: 'rgba(255,255,255,0.0)',
-          datalabels: {
-            display: function(context) {
-              return context.dataIndex === (context.dataset.data.length - 1); // display labels for last one
-            },
-            backgroundColor: 'black',
-            color: 'white',
-            align: 'center',
-            anchor: 'end',
-            formatter: function(value, context) {
-              return 'Median: ' + (symbol === 'x' ? value.toFixed(1) + symbol : value.toFixed(0) + symbol);
-            }
-          }
-        }],
-		  }
-		}
+      datasets: this.getChartDataset(selectedMetric)
+    }}
 
     return (
         <Bar data={data} height={document.body.clientWidth > 960 ? 250 : 600 } width={800} redraw={this.state.shouldRedraw} options={{
@@ -74,10 +80,10 @@ class CompChart extends Component {
               color: 'black',
               font: {
                 family: 'Roboto',
-                size: document.body.clientWidth <= 600 || comps.length > 10 ? 12 : 16
+                size: document.body.clientWidth <= 600 ? 12 : 16
               },
               formatter: function (value, context) {
-                return (!value || value === 0) ? 'NM' : (symbol === 'x' ? value.toFixed(1)+symbol : value.toFixed(0)+symbol);
+                return "$"+value.toFixed(1);
               }
             }
           },
@@ -105,9 +111,9 @@ class CompChart extends Component {
                   return value;
                 },
                 fontFamily: 'Roboto',
-                fontSize: document.body.clientWidth <= 600 || comps.length > 10 ? 12 : 16,
+                fontSize: document.body.clientWidth <= 600 ? 12 : 16,
                 formatter: function (value, context) {
-                return (!value || value === 0) ? 'NM' : (symbol === 'x' ? value.toFixed(1)+symbol : value.toFixed(0)+symbol);
+                return value.toFixed(1);
                 }
               }
             }],
@@ -123,7 +129,7 @@ class CompChart extends Component {
                 maxRotation: document.body.clientWidth > 960 ? 0 : 90,
                 minRotation: document.body.clientWidth > 960 ? 0 : 90,
                 fontFamily: 'Roboto',
-                fontSize: document.body.clientWidth <= 600 || comps.length > 10 ? 12 : 16
+                fontSize: document.body.clientWidth <= 600 ? 12 : 16
 							}
             }]
         	}
@@ -133,4 +139,4 @@ class CompChart extends Component {
   }
 }
 
-export default withStyles(styles, { withTheme: true })(CompChart);
+export default withStyles(styles, { withTheme: true })(FinancialsChart);

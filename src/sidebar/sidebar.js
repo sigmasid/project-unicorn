@@ -2,134 +2,132 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 
-import classNames from 'classnames';
-import List from 'material-ui/List';
-import { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+import { MenuList, MenuItem } from 'material-ui/Menu';
+import { ListItemIcon, ListItemText } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
-import ChevronIcon from 'material-ui-icons/ChevronLeft';
 import Drawer from 'material-ui/Drawer';
-import IconButton from 'material-ui/IconButton';
-import { Link } from 'react-router-dom';
 
-import TrendingIcon from 'material-ui-icons/Whatshot';
-import MethodologyIcon from 'material-ui-icons/Info';
 import ContactIcon from 'material-ui-icons/Send';
 import TermsIcon from 'material-ui-icons/Description';
+
+import SectorsIcon from 'material-ui-icons/Dashboard';
+import MarketsIcon from 'material-ui-icons/Equalizer';
+import TrendingIcon from 'material-ui-icons/Whatshot';
+import StartupsIcon from 'material-ui-icons/ChildCare';
+import NewsIcon from 'material-ui-icons/Comment';
+
 import SignupIcon from 'material-ui-icons/Bookmark';
+import CompanyDetailMenu from './companyMenu.js';
+import Hidden from 'material-ui/Hidden';
 
-import FeaturedTiles from './featuredTiles.js';
-import Tooltip from 'material-ui/Tooltip';
+import { Route, Link } from 'react-router-dom'
 
-const drawerWidth = 240;
+const util = require('util'); //print an object
 
 const styles = theme => ({
-  menuButton: {
-    marginLeft: 12,
-    marginRight: 20,
+  root: {
+    marginTop: 56,  
+    width: 240,
+    [theme.breakpoints.up('md')]: {
+      position: 'relative',
+    },    
   },
-  hide: {
-    display: 'none',
+  mainMenu: {
+    marginTop: 16
   },
-  drawerPaper: {
-    position: 'relative',
-    height: '100%',
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    [theme.breakpoints.down('sm')]: {
-      display: 'none'
+  menuItem: {
+    '&:focus': {
+      backgroundColor: theme.palette.primary.main,
+      '& $primary, & $icon': {
+        color: theme.palette.common.white,
+      },
     },
+    '&:active': {
+      backgroundColor: theme.palette.primary.main      
+    }
   },
-  drawerPaperClose: {
-    width: 60,
-    overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
+  selectedMenuItem: {
+    backgroundColor: theme.palette.primary.main,
   },
-  drawerInner: {
-    // Make the items inside not wrap when transitioning:
-    width: drawerWidth,
-  },
-  drawerHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
-    ...theme.mixins.toolbar,
-  }
+  primary: {},
+  icon: {}
 });
 
-const bottomMenu = (classes, handleEmailToggle, showWhatsHot, loadTrending) => {
-  return (
-    <List className={classes.list}>
-      { showWhatsHot && whatsHot(classes, loadTrending)}
-      <ListItem button component={Link} to={'/methodology'} key={'methodology'}>
-      <Tooltip id="tooltip-top" title="FAQs" placement="bottom">
-        <ListItemIcon><MethodologyIcon /></ListItemIcon>
-      </Tooltip>
-        <ListItemText primary="Methodology" />
-      </ListItem> 
-      <ListItem button component={Link} to={'/terms'} key={'terms'}>
-        <Tooltip id="tooltip-top" title="Terms" placement="bottom">
-          <ListItemIcon><TermsIcon /></ListItemIcon>
-        </Tooltip>
-        <ListItemText primary="Terms" />
-      </ListItem>
-        <ListItem button component={Link} to={'/contact'} key={'contact'}>
-        <Tooltip id="tooltip-top" title="Contact" placement="bottom">
-          <ListItemIcon><ContactIcon /></ListItemIcon>
-        </Tooltip>
-        <ListItemText primary="Contact" />
-      </ListItem>      
-      <ListItem button onClick={handleEmailToggle} key={'signup'}>
-        <Tooltip id="tooltip-top" title="Signup" placement="bottom">
-          <ListItemIcon><SignupIcon /></ListItemIcon>
-        </Tooltip>
-        <ListItemText primary="Signup" />
-      </ListItem>     
-    </List>
-  );
-}
+const BottomMenu = (props) => {
+  var {classes, active} = props;
 
-const whatsHot = (classes, loadTrending) => {
-  return (
-  <ListItem button onClick={loadTrending} key={'whatshot'}>
-    <Tooltip id="tooltip-top" title="Trending" placement="bottom">
-      <ListItemIcon><TrendingIcon /></ListItemIcon>
-      </Tooltip>
-      <ListItemText primary="Trending" />
-  </ListItem> 
+  return(
+  <MenuList className={classes.bottomMenu}>
+    <MenuItem button component={Link} to={'/terms'} key={'terms'} className={classes.menuItem} selected={active === 'terms'}>
+      <ListItemIcon className={classes.icon}>
+        <TermsIcon />
+      </ListItemIcon>      
+      <ListItemText primary="Terms" classes={{ primary: classes.primary }}  />
+    </MenuItem>
+    <MenuItem button component={Link} to={'/contact'} key={'contact'} className={classes.menuItem} selected={active === 'contact'}>
+      <ListItemIcon className={classes.icon}>
+        <ContactIcon />
+      </ListItemIcon>
+      <ListItemText primary="Contact" classes={{ primary: classes.primary }}  />
+    </MenuItem>    
+    <MenuItem button key={'signup'} className={classes.menuItem} >
+      <ListItemIcon className={classes.icon}>
+        <SignupIcon />
+      </ListItemIcon>
+      <ListItemText primary="Signup" classes={{ primary: classes.primary }} />
+    </MenuItem>     
+  </MenuList>
   );
 }
 
 class SideBar extends React.Component {
   render() {
-    const { classes, open, handleDrawerClose, tickers, loadTrending } = this.props;
-    return (
-    <Drawer
-      type="permanent"
-      classes={{ paper: classNames(classes.drawerPaper, !open && classes.drawerPaperClose)}}
-      open={open}
-    >
-      <div className={classes.drawerInner}>
-        <div className={classes.drawerHeader}>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronIcon />
-          </IconButton>
-        </div>
-        <Divider />
-          {tickers ? <List className={classes.list}>{ FeaturedTiles(tickers) }</List> : null }
-          {tickers && <Divider /> }
-          {bottomMenu(classes, this.props.handleEmailToggle, tickers ? false : true, loadTrending)}
-      </div>
-    </Drawer>
+    const {classes, match} = this.props;
+    var active = match.params.active;
+
+    return(
+      <Hidden mdDown implementation="css">
+        <Drawer variant="permanent" open classes={{ paper: classes.root }}>
+          <MenuList className={classes.mainMenu} >
+            <Route path="/stocks/:ticker/:detail?" component={CompanyDetailMenu} exact={false} />
+            <MenuItem button component={Link} to={'/trending'} key={'stocks'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'trending'}>
+              <ListItemIcon className={classes.icon}>
+                <TrendingIcon />
+              </ListItemIcon>
+              <ListItemText primary="Trending" classes={{ primary: classes.primary }} />
+            </MenuItem>
+            <MenuItem button component={Link} to={'/markets'} key={'markets'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'markets'}>
+              <ListItemIcon className={classes.icon}>
+                <MarketsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Markets" classes={{ primary: classes.primary }} />
+            </MenuItem>
+            <MenuItem button component={Link} to={'/sectors'} key={'sectors'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'sectors'}>
+              <ListItemIcon className={classes.icon}>
+                <SectorsIcon />
+              </ListItemIcon>      
+              <ListItemText primary="Sectors" classes={{ primary: classes.primary }}  />
+            </MenuItem>
+            <MenuItem button component={Link} to={'/startups'} key={'startups'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'startups'}>
+              <ListItemIcon className={classes.icon}>
+                <StartupsIcon />
+              </ListItemIcon>      
+              <ListItemText primary="Startups" classes={{ primary: classes.primary }}  />
+            </MenuItem>
+            <MenuItem button component={Link} to={'/news'} key={'news'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'news'}>
+              <ListItemIcon className={classes.icon}>
+                <NewsIcon />
+              </ListItemIcon>      
+              <ListItemText primary="News" classes={{ primary: classes.primary }}  />
+            </MenuItem>   
+          </MenuList>
+          <Divider />
+          <BottomMenu classes={classes} active={active} />
+        </Drawer>
+      </Hidden>
     );
   }
-}
+};
 
 SideBar.propTypes = {
   classes: PropTypes.object.isRequired,

@@ -1,19 +1,23 @@
 const methodologyItems = [
   {
-    question: 'What are puEstimates?',
-    answer: 'A puEstimate gives an estimated market value for a private company using public market comparables for a given category. For example, if you think Uber is a digital marketplace, you can use our public comparables and rumored Uber financials to triangulate a valuation for the company. It\'s a bit like Zillow\'s Zestimate or Redfin price estimates, so you can use it as a starting point to think about a company\'s value.'
+    question: 'What are valuation scenarios?',
+    answer: 'Valuation scenarios give a range of estimated market values (downside, base and upside) for a private company using public market comparables. For some of the unicorns, we use specific publicly traded comparables to illustrate potential upside and downside scenarios. For example, if you think Uber is strictly a marketplace destinated for domination, you would likely use our "bull" case and rumored Uber financials to triangulate an upside valuation. It\'s a bit like Zillow\'s Zestimate or Redfin price estimates, so you can use it as a starting point to think about a company\'s value.'
   },
   {
-    question: 'How accurate are pu estimates / company financials?',
-    answer: 'Probably not very. For founders, VCs, employees, we hope this is a tool to at least get directional guidance on what public market investors expect and how Wall Street is likely to think about value in an IPO. For employees and senior executives it may provide a better more informed perspective of what you are signing up for.'
+    question: 'How accurate are the estimates / company financials?',
+    answer: 'Probably not very. For founders, VCs, employees, and anyone looking to better understand startups, we hope this is a tool to at least get directional guidance on how public market investors are likely to think about value. For employees and senior executives it may provide an informed perspective of a startup\'s potential and what you are signing up for.'
   },  
   {
     question: 'Why did you create this?',
-    answer: 'It started with a simple bet. Is Stripe worth $50B? And while we are pretty huge fans of Stripe as a Company, there really was no way to compare valuations and see public comparables. So we hope this is an easy to use tool to compare valuations and get smarter on what\'s drives value.'
+    answer: 'It started with a simple bet. Is Stripe worth $50B? And while we are pretty huge fans of Stripe as a Company, there\'s really was no way to compare valuations and see public comparables. So this is an easy to use tool to compare valuations and understand what\'s drives value.'
   },
   {
-    question: 'How should I think about private / public company valutions?',
-    answer: 'There is a pretty huge information asymmetry between public / private market valuations. Public markets tend to be much more efficient albeit short sighted re: valuations whereas private markets are way too static and aspirational (mostly by design). Given the size of private unicorns, decacorns and eventual petacorns, the idea is that these \'startups\' are mature enough to be evaluated using a public market lens. And since many unicorns are starting to go public, this tool should also be helpful when thinking about likely public market outcomes'
+    question: 'Why are some international and other big startups missing from the list?',
+    answer: 'For companies that focus on deep tech (Magic Leap for example), traditional financial analysis is fairly pointless as value is driven by transformative potential of technology. Or in other cases like SpaceX, the TAM is so big that any financial analysis would not reflect true market value. For international companies, while we have added some companies, we just don\'t have a deep enough understanding of the companies and market to be able to offer fair valuation analyses.'
+  }, 
+  {
+    question: 'How should I think about private / public company valuations?',
+    answer: 'Given private valuations are static, they don\'t always reflect current market sentiment which often creates big asymmetry between public / private markets. For example, SaaS companies have outperformed other sectors while ad tech has fallen out of favor in public markets. Public markets tend to be more efficient albeit short sighted re: valuations whereas private markets are much more static and aspirational (by design). Given the size of private unicorns, decacorns and eventual petacorns, the idea is that these \'startups\' are mature enough to be evaluated using a public market lens.'
   },
   {
     question: 'What else do I need to know (aka caveats)?',
@@ -22,11 +26,7 @@ const methodologyItems = [
   {
     question: 'What is the source for estimates?',
     answer: 'For public companies, the estimates are wall street analyst consensus estimates. For private companies, estimates are typically rumored / leaked numbers from press reports where available or an educated estimate based on operating metrics available. If numbers are not available, you can click to see implied financial metrics i.e. what the revenue will have to be (for a given year) based on the comps multiples and the companies last valuation round.'
-  },
-  {
-    question: 'What does implied \'revenue\' or \'EBITDA\' mean?',
-    answer: 'Implied financial metrics show what revenue or financial metric is implied by companies last valuation round based on public market comparables. For example, if you believe Uber is a logistics company and similar comparables trade at a 2.0x revenue multiple, then we can use that to imply what Uber\'s revenue needs to be this year to justify it\'s valuation'
-  },
+  }, 
   {
     question: 'Company X is worth at least $100 billion and has a TAM of $100 trillion',
     answer: 'Nice.'
@@ -34,11 +34,7 @@ const methodologyItems = [
   {
     question: 'Company X is way superior than Public Company Y so should have a much higher multiple!',
     answer: 'Yes it probably should. Use the input box to enter any number you like.'
-  },
-  {
-    question: 'Company X doen\'t have any public comps because it\'s completely revolutionary, disruptive etc.',
-    answer: 'While there are revolutionary category defining companies, if the goal is to be public company investors are likely to try and put the company in a bucket that can be compared to others'
-  },
+  }
 ];
 
 export default methodologyItems;

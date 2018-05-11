@@ -10,7 +10,7 @@ import SimilarStartups from '../companyDetail/similarStartups.js';
 import ErrorMessage from '../shared/errorMessage.js';
 import {Helmet} from "react-helmet";
 
-//const util = require('util'); //print an object
+const util = require('util'); //print an object
 
 const styles = theme => ({
 });
@@ -54,13 +54,21 @@ class SectorDetails extends React.Component {
     .then(doc => {
       if (doc.data()) {
         var sector = doc.data();
+        var category = undefined;
+        const hashParts = window.location.hash.split('#');
 
-        var category = (this.props.location.state && this.props.location.state.selectedCategory) ? this.props.location.state.selectedCategory : Object.keys(sector.type)[0];
+        if (hashParts.length > 1 && Object.keys(sector.type).includes(hashParts[1].replace('-', ' '))) {
+          const hash = hashParts[1].replace('-', ' ');
+          category = hash;
+        } else if (this.props.location.state && this.props.location.state.selectedCategory) {
+          category = this.props.location.state.selectedCategory
+        } else {
+          category = Object.keys(sector.type)[0];
+        }
 
         this.setState({
           sector: sector,
           sectorID: sectorID,
-          selectedCategoryName: category,
           error: undefined
         })
 
@@ -109,7 +117,8 @@ class SectorDetails extends React.Component {
     .catch(err => {
       this.setState({ 
         compSet: undefined, 
-        selectedCategoryName: undefined
+        selectedCategoryName: undefined,
+        error: 'invalid'
       });
     });
   }

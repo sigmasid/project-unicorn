@@ -45,7 +45,7 @@ class SimilarStartups extends React.Component {
 
   getCategory(category) {
     var db = firebase.firestore();
-    var compsRef = db.collection('private').where('category.'+category, '==', true);
+    var compsRef = db.collection('private').where('category.'+category, '>', 0);
 
     compsRef.get()
     .then(snapshot => {

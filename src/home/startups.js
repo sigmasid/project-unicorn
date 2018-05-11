@@ -16,13 +16,14 @@ import NumberFormat from 'react-number-format';
 import NavigateNext from 'material-ui-icons/NavigateNext';
 import Loading from '../shared/loading.js';
 import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
-import Moment from 'react-moment';
 
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import ReactGA from 'react-ga';
 
-//const util = require('util'); //print an object
+var moment = require('moment');
+
+const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -116,12 +117,16 @@ const styles = theme => ({
     marginLeft: 100,
     [theme.breakpoints.down('md')]: {
       display: 'none'
-    }    
+    } 
+  },
+  seeAll: {
+    width: '100%',
+    textAlign: 'center'
   }
 });
 
 const UnicornLeaderboard = (classes, unicorns) => {
-  if (unicorns === undefined) {
+  if (!unicorns) {
     return <Loading />
   }
 
@@ -136,15 +141,15 @@ const UnicornLeaderboard = (classes, unicorns) => {
       { Object.keys(unicorns).map(function(key) {
         var company = unicorns[key];
         var hq = (company.city ? company.city.toProperCase() : '') + (company.state ? ', ' + company.state.toUpperCase() : '');
-        const lastValuationDate = company.lastValuationDate ? <Moment date={new Date(company.lastValuationDate - (25567 + 1))*86400*1000} format="MMM YYYY" /> : null;
+        const lastValuationDate = company.lastValuationDate ? moment(new Date(company.lastValuationDate - (25567 + 1))*86400*1000).format("MMM YYYY") : null;
 
         return(
-        <ListItem button component={Link} to={'/c/'+company.ticker} key={key} >
+        <ListItem button component={Link} to={'/startups/'+company.ticker} key={key} >
           <ImageAvatars src={company.logo} />
           <ListItemText className={classes.leaderboardCompany} primary={company.name.toProperCase()} secondary={hq} />
           <ListItemText className={classes.leaderboardValuation} secondary={lastValuationDate} />
           <ListItemSecondaryAction>            
-            <Button mini aria-label="lastValuation" component={Link} to={'/c/'+company.ticker} className={classes.button} color="primary">
+            <Button mini aria-label="lastValuation" component={Link} to={'/startups/'+company.ticker} className={classes.button} color="primary">
               <NumberFormat value={formatMetric(company.lastValuation)} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(company.lastValuation)} />
               &nbsp;&nbsp;
               <NavigateNext className={classes.navigateNext} />
@@ -154,6 +159,9 @@ const UnicornLeaderboard = (classes, unicorns) => {
         )
       })
       }
+      <ListItem button component={Link} to={'/startups/all'} key={'seeAll'} >
+        <ListItemText className={classes.seeAll} primary="See All" />
+      </ListItem>
     </List>
   );
 }
@@ -167,12 +175,15 @@ class Home extends React.Component {
     }
 
     this.getUnicorns = this.getUnicorns.bind(this);
-    this.getUnicorns('biggest');
+  }
+
+  componentDidMount() {
+    this.getUnicorns('biggest');    
   }
 
   getUnicorns = (order) => {
     var db = firebase.firestore();
-    var unicornsRef = db.collection('private').orderBy(this.getSortOrder(order), 'desc').limit(10);
+    var unicornsRef = order === 'recent IPOs' ? db.collection('private').where("publicTicker", ">", 'a').limit(10) : db.collection('private').orderBy(this.getSortOrder(order), 'desc').limit(10);
 
     unicornsRef.get()
     .then(snapshot => {
@@ -190,10 +201,6 @@ class Home extends React.Component {
           action: 'Update Sort',
           label: order
         });
-        
-        if (order === 'biggest') {
-          this.props.setFeatured(unicorns);
-        }
     })
     .catch(err => {
       this.setState({ 
@@ -208,6 +215,8 @@ class Home extends React.Component {
       return 'lastValuation';
     case 'latest':
       return 'lastValuationDate'
+    case 'recent IPOs':
+      return 'publicTicker'
     default:
       return 'lastValuation';
     }
@@ -215,8 +224,8 @@ class Home extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { selectedOrder } = this.state;
-    const orderOptions = [{name: 'biggest', emoji: "💪"}, {name: 'latest', emoji: "👶"}];
+    const { selectedOrder, unicornList } = this.state;
+    const orderOptions = [{name: 'biggest', emoji: "💪"}, {name: 'latest', emoji: "👶"}, {name: 'recent IPOs', emoji: "📈"}];
 
     const orderChips = <Paper className={classes.chipPaper}>
                           {orderOptions.map(obj => {
@@ -233,13 +242,13 @@ class Home extends React.Component {
     return (
       <div className={classes.root}>
         <Paper className={classes.header} >
-          <Typography type="display3" className={classes.titleText}>
-            Leaderboard
+          <Typography variant="display3" className={classes.titleText}>
+            Startups
           </Typography>
           {orderChips}
         </Paper>
         <Paper className={classes.lists} >
-          {UnicornLeaderboard(classes, this.state.unicornList)}
+          { UnicornLeaderboard(classes, unicornList) }
         </Paper>          
       </div>
     );
