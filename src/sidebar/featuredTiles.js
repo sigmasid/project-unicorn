@@ -1,5 +1,9 @@
 import React from 'react';
-import { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+
 import ImageAvatars from './companyIcon.js';
 import { Link } from 'react-router-dom';
 //const util = require('util'); //print an object

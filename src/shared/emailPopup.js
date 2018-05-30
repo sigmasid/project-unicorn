@@ -1,18 +1,18 @@
 import React from 'react';
-import { withStyles } from 'material-ui/styles';
-import Button from 'material-ui/Button';
-import TextField from 'material-ui/TextField';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
+import { withStyles } from '@material-ui/core/styles';
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import Cookies from 'universal-cookie';
-import { CircularProgress } from 'material-ui/Progress';
-import {lightBlue } from 'material-ui/colors';
+
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const styles = theme => ({
   wrapper: {
@@ -20,7 +20,7 @@ const styles = theme => ({
     position: 'relative',
   },
   buttonProgress: {
-    color: lightBlue[500],
+    color: theme.palette.primary.main,
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -33,6 +33,12 @@ class EmailPopup extends React.Component {
   state = {
     open: this.props.open,
   };
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.open !== prevProps.open) {
+      this.setState({ open: this.props.open });
+    }
+  }
 
   handleClose = () => {
     this.setState({ open: false });
@@ -78,10 +84,9 @@ class EmailPopup extends React.Component {
         const cookies = new Cookies();
         cookies.set('showEmailCapture', false, { path: '/' });
     })
-    .catch(function(error) {
+    .catch( error => {
         // The document probably doesn't exist.
-        self.setState({ error: true, loading: false });
-        console.error("Error updating document: ", error);
+        self.setState({ error: error, loading: false });
     });
   }
 
@@ -89,8 +94,8 @@ class EmailPopup extends React.Component {
     const { classes } = this.props;
     const { loading, success } = this.state;
 
-    var titleMessage = !success ? "Welcome to Project Unicorn!" : "Welcome Aboard!";
-    var subtitleMessage = !success ? "We are building a definitive resource on startup & technology valuations. Join the list for latest releases & updates!" : "We will keep you posted on new releases & updates!";
+    var titleMessage = !success ? "Let's Stay in Touch?" : "Welcome Aboard!";
+    var subtitleMessage = !success ? "We are building the definitive resource for tech stocks and startups. Join the list for latest releases & updates!" : "We will keep you posted on new releases & updates!";
 
     return (
       <div>

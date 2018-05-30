@@ -1,17 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Card, { CardHeader, CardContent } from 'material-ui/Card';
+import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+
+import Avatar from '@material-ui/core/Avatar';
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 import Loading from '../shared/loading.js';
 import SectorChips from './sectorChips.js';
-import Avatar from 'material-ui/Avatar';
-import classNames from 'classnames';
-import ExpansionPanel, {
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-} from 'material-ui/ExpansionPanel';
-import Typography from 'material-ui/Typography';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 
 //const util = require('util'); //print an object
 
@@ -60,42 +65,41 @@ const styles = theme => ({
 });
 
 function SectorCard(props) {
-  const { classes, sector, categories, selectedCategoryName, updateCompSet } = props;
+  const { classes, sector, categories, selectedCategoryName, updateCompSet, sorted } = props;
 
   if (!sector || !selectedCategoryName || !categories || !categories[selectedCategoryName]) {
     return <Loading />
   }
 
   return (
-    <div>
-      <Card className={classes.card}>
-        <div className={classes.logoWrapper}>
-          <Avatar alt="Sector Logo" className={classNames(classes.avatar, classes.tileAvatar)}><span className={classes.emoji} alt="sector logo">{categories[selectedCategoryName].logo}</span></Avatar>
-        </div>
-        <CardHeader 
-          title={selectedCategoryName.toProperCase()}
-          subheader={(categories[selectedCategoryName].description && categories[selectedCategoryName].description) || (sector && sector.name.toProperCase())}
-          classes={{
-            root: classes.header,
-            title: classes.title,
-            subheader: classes.subtitle
-          }}            
-        />
-        <CardContent className={classes.content}>
-          <ExpansionPanel className={classes.changeSector} defaultExpanded={true} >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <div className={classes.sectorText}><Typography className={classes.heading}>Change Sector</Typography></div>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <SectorChips  categories={categories} 
-                            selectedCategoryName={selectedCategoryName}
-                            updateCompSet={updateCompSet}
-                            className={classes.chips} />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className={classes.card}>
+      <div className={classes.logoWrapper}>
+        <Avatar alt="Sector Logo" className={classNames(classes.avatar, classes.tileAvatar)}><span className={classes.emoji} alt="sector logo">{categories[selectedCategoryName].logo}</span></Avatar>
+      </div>
+      <CardHeader 
+        title={selectedCategoryName.toProperCase()}
+        subheader={(categories[selectedCategoryName].description && categories[selectedCategoryName].description) || (sector && sector.name.toProperCase())}
+        classes={{
+          root: classes.header,
+          title: classes.title,
+          subheader: classes.subtitle
+        }}            
+      />
+      <CardContent className={classes.content}>
+        <ExpansionPanel className={classes.changeSector} defaultExpanded={true} >
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <div className={classes.sectorText}><Typography className={classes.heading}>Change Subsector</Typography></div>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <SectorChips  categories={categories} 
+                          sorted={sorted}
+                          selectedCategoryName={selectedCategoryName}
+                          updateCompSet={updateCompSet}
+                          className={classes.chips} />
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      </CardContent>
+    </Card>
   );
 }
 

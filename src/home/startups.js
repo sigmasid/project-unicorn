@@ -1,19 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import List, { ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
-import ListSubheader from 'material-ui/List/ListSubheader';
-import Typography from 'material-ui/Typography';
+import { withStyles } from '@material-ui/core/styles';
+import {Helmet} from "react-helmet";
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import ListSubheader from '@material-ui/core/ListSubheader';
+
+import Typography from '@material-ui/core/Typography';
 import ImageAvatars from '../sidebar/companyIcon.js';
-import Paper from 'material-ui/Paper';
-import Button from 'material-ui/Button';
-import Avatar from 'material-ui/Avatar';
-import Chip from 'material-ui/Chip';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
 import classNames from 'classnames';
 
 import { Link } from 'react-router-dom'
 import NumberFormat from 'react-number-format';
-import NavigateNext from 'material-ui-icons/NavigateNext';
+import NavigateNext from '@material-ui/icons/NavigateNext';
 import Loading from '../shared/loading.js';
 import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
 
@@ -23,7 +29,7 @@ import ReactGA from 'react-ga';
 
 var moment = require('moment');
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -241,6 +247,10 @@ class Home extends React.Component {
 
     return (
       <div className={classes.root}>
+        <Helmet>
+          <title>Startups</title>
+          <meta name="description" content="Get exclusive public market valuations for tech unicorns like Uber, Lyft, Airbnb, Pinterest and more" />          
+        </Helmet>       
         <Paper className={classes.header} >
           <Typography variant="display3" className={classes.titleText}>
             Startups

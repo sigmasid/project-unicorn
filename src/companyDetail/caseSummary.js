@@ -1,16 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Card, { CardHeader, CardContent } from 'material-ui/Card';
-import GridList, { GridListTile, GridListTileBar } from 'material-ui/GridList';
+import { withStyles } from '@material-ui/core/styles';
 import NumberFormat from 'react-number-format';
-import Avatar from 'material-ui/Avatar';
 import classNames from 'classnames';
-import Popover from 'material-ui/Popover';
-import Typography from 'material-ui/Typography';
+
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+
+import Avatar from '@material-ui/core/Avatar';
+import Popover from '@material-ui/core/Popover';
+import Typography from '@material-ui/core/Typography';
+
 import { findDOMNode } from 'react-dom';
 import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
-import { SnackbarContent } from 'material-ui/Snackbar';
 
 //const util = require('util'); //print an object
 
@@ -37,7 +45,7 @@ const styles = theme => ({
     },
   },
   subtitle: {
-    color: theme.palette.primary.light,
+    color: theme.palette.primary.main,
     whiteSpace: 'normal',
     cursor: 'pointer'
   },

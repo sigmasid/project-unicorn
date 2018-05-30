@@ -1,11 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Card, { CardHeader, CardContent } from 'material-ui/Card';
-import GridList, { GridListTile, GridListTileBar } from 'material-ui/GridList';
+import { withStyles } from '@material-ui/core/styles';
+
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+
 import NumberFormat from 'react-number-format';
 import Loading from '../shared/loading.js';
-import Avatar from 'material-ui/Avatar';
+import Avatar from '@material-ui/core/Avatar';
 import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
 
 //const util = require('util'); //print an object
@@ -141,19 +148,6 @@ const StatOutput = (classes, compSet) => {
           }}
         />
       </GridListTile>
-      {/* 
-      <GridListTile key={2}>
-        <Avatar className={sectorValues.ebitdaMargin > 0.2 ? classes.greenAvatar : sectorValues.ebitdaMargin > 0.1 ? classes.amberAvatar : classes.redAvatar}><NumberFormat value={Math.round(sectorValues.ebitdaMargin * 100)} displayType={'text'} suffix={'%'}/></Avatar>
-        <GridListTileBar
-          title="EBITDA Margin"
-          subtitle="CY2018E"
-          classes={{
-            root: classes.titleBar,
-            title: classes.title,
-            subtitle: classes.title
-          }}       
-        />
-      </GridListTile> */}
       <GridListTile key={3}>
         <Avatar className={ classes.avatar }><NumberFormat value={Math.round(sectorValues.netMargin * 100)} displayType={'text'} suffix={'%'}/></Avatar>
         <GridListTileBar
@@ -165,21 +159,7 @@ const StatOutput = (classes, compSet) => {
             subtitle: classes.title
           }}       
         />
-      </GridListTile>
-      {/* 
-      <GridListTile key={4}>
-        <Avatar className={ sectorValues.ltmRD > 0.1 ? classes.redAvatar : sectorValues.ltmRD > 0.05 ? classes.amberAvatar : classes.greenAvatar }><NumberFormat value={Math.round(sectorValues.ltmRD * 100)} displayType={'text'} suffix={'%'}/></Avatar>
-        <GridListTileBar
-          title="R&D Margin"
-          subtitle="LTM"
-          classes={{
-            root: classes.titleBar,
-            title: classes.title,
-            subtitle: classes.title
-          }}
-        />
-      </GridListTile>
-      */}        
+      </GridListTile>      
     </GridList> 
   </CardContent>  
   )

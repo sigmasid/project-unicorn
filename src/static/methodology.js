@@ -1,14 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import ExpansionPanel, {
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-} from 'material-ui/ExpansionPanel';
-import Typography from 'material-ui/Typography';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import { withStyles } from '@material-ui/core/styles';
+import {Helmet} from "react-helmet";
+
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MethodologyItems from './methodology-items.js';
-import Paper from 'material-ui/Paper';
+import Paper from '@material-ui/core/Paper';
 
 const styles = theme => ({
   root: {
@@ -77,8 +79,12 @@ function MethodologyPanes(props) {
   const { classes } = props;
   return (
   <div className={classes.root}>
+    <Helmet>
+      <title>Methodology & FAQs</title>
+      <meta name="description" content="How we calculate estimates and get our data" />          
+    </Helmet>     
     <Paper className={classes.header} >
-      <Typography type="display3" className={classes.titleText}>
+      <Typography variant="display3" className={classes.titleText}>
         FAQs
       </Typography>
     </Paper>

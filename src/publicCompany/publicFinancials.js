@@ -1,15 +1,19 @@
 import React, { Component } from 'react'
 
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
-import Card, { CardContent, CardHeader } from 'material-ui/Card';
-import TextField from 'material-ui/TextField';
-import MenuItem from 'material-ui/Menu/MenuItem';
-import BarChart from './financialsChart.js';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
+import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
+import Chart from './financialsChart.js';
 import Loading from '../shared/loading.js';
-
-const util = require('util'); //print an object
+import ErrorMessage from '../shared/errorMessage.js';
+//const moment = require('moment');
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   card: {
@@ -84,88 +88,50 @@ const styles = theme => ({
   }
 });
 
-class StockChart extends Component {
-  constructor (props) {
-    super(props);
-    
-    this.handleCompTextInput = this.handleCompTextInput.bind(this);    
-    this.getUnit = this.getUnit.bind(this);    
-    this.getUnitLabel = this.getUnitLabel.bind(this);    
-
-    const availableMetrics = [{name: 'totalRevenue', title: "Revenue"}, {name: 'grossProfit', title: "Gross Profit"}, {name: 'operatingIncome', title: "Operating Income"}, {name: 'netIncome', title: "Net Income"}];
-    var selectedMetricValue = ((props.chartData[Object.keys(props.chartData)[0]]).financials.financials)[0]['totalRevenue'];
-    var unit = this.getUnit(selectedMetricValue);
-    
-    this.state = { 
-      priceData: props.priceData,
-      value: 0,
-      unit: this.getUnit(selectedMetricValue),
-      unitLabel: this.getUnitLabel(unit),
-      availableMetrics: availableMetrics,
-      selectedMetric: 'totalRevenue'
-    }
+const getUnit = (type, metric) => {
+  if (type === 'annual') {
+    return metric > 1000 ? 1000 : 1;
   }
 
-  handleCompTextInput = name => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
-  };
+  if (metric > 1000000000) {
+    return 1000000000;
+  } else if (metric > 1000000) {
+    return 1000000;
+  } else {
+    return metric;
+  }
+}
 
-  handleAddComp = () => {
-    this.props.addComp(this.state.compTicker);
+const getUnitLabel = (type, unit) => {
+  if (type === 'annual') {
+    return unit === 1000 ? '($ in Billions, Except Per Share Data)' : '($ in Millions, Except Per Share Data)';
   }
 
-
-  handleChange = name => event => {
-    var selectedMetricValue = ((this.props.chartData[Object.keys(this.props.chartData)[0]]).financials.financials)[0][event.target.value];
-    var unit = this.getUnit(selectedMetricValue);
-    this.setState({unit: unit, unitLabel: this.getUnitLabel(unit), selectedMetric: event.target.value});
-  };
-
-  getUnit = metric => {
-    if (metric > 1000000000) {
-      return 1000000000;
-    } else if (metric > 1000000) {
-      return 1000000;
-    } else {
-      return metric;
-    }
+  if (unit === 1000000000) {
+    return '($ in Billions)';
+  } else if (unit === 1000000) {
+    return '($ in Millions)';
+  } else {
+    return '(in $s)';
   }
+}
 
-  getUnitLabel = unit => {
-    if (unit === 1000000000) {
-      return '($ in Billions)';
-    } else if (unit === 1000000) {
-      return '($ in Millions)';
-    } else {
-      return '(in $s)';
-    }
-  }
+const Financials = (props) => {
+  var { classes, type, selectedMetric, handleChange, availableMetrics, chartData } = props;
+  var selectedMetricValue = chartData && chartData[0].value;
 
-  formatMetricType = (type) => {
-    switch(type) {
-      case 'totalRevenue': return 'Revenue';
-      case 'grossProfit': return 'Gross Profit';
-      case 'operatingIncome': return 'Operating Income';
-      case 'netIncome': return 'Net Income';
-      default: return "Selected Metric";
-    }
-  }
+  var unit = getUnit(type, selectedMetricValue); //annual financials are in millions from firebase
+  var unitLabel = getUnitLabel(type, unit); 
 
-  render() {
-    const { classes, theme, chartData } = this.props;
-    const { selectedMetric, availableMetrics, unit, unitLabel  } = this.state;
-    console.log("unit is "+unit);
+  var selected = availableMetrics.filter(obj => { 
+    return obj.name === selectedMetric 
+  });
+  var selectedTitle = selected[0].title;
 
-    if (!chartData) {
-      return null;
-    }
-
-    return(
+  return (
     <Card className={classes.card} >
       <CardHeader 
-        title={"Quarterly "+this.formatMetricType(selectedMetric)+" Performance"} 
+        title={type.toProperCase()+" "+selectedTitle+" Performance"} 
         subheader={unitLabel} 
         classes={{root: classes.header, action: classes.headerAction}} 
         action={
@@ -175,7 +141,7 @@ class StockChart extends Component {
             label="Select Metric"
             className={classes.textField}
             value={selectedMetric}
-            onChange={this.handleChange('selectedMetric')}
+            onChange={handleChange('selected'+type.toProperCase()+'Metric')}
             SelectProps={{
               MenuProps: {
                 className: classes.menu,
@@ -191,18 +157,86 @@ class StockChart extends Component {
           </TextField>           
         } />
       <CardContent className={classes.cardContent} >
-        { chartData ? <BarChart chartData={chartData} shouldRedraw={false} selectedMetric={selectedMetric} unit={unit} /> : <Loading /> }
+        { chartData ? <Chart chartData={chartData} shouldRedraw={false} selectedMetric={selectedMetric} unit={unit} /> : <Loading /> }
       </CardContent>
       {/*<TickersList chipData={chipData} deleteComp={deleteComp} />*/}
-    </Card>
+    </Card>    
+  );
+}
+
+class FinancialsChart extends Component {
+  constructor (props) {
+    super(props);
+
+    var selectedQuarterlyMetric = props.quarterlyMetrics[0].name;
+    var selectedAnnualMetric = props.annualMetrics[0].name;
+
+    this.state = { 
+      chartData: props.chartData,
+      selectedQuarterlyMetric: selectedQuarterlyMetric,
+      selectedAnnualMetric: selectedAnnualMetric      
+    }
+
+    if (!props.quarterlyData) {
+      props.updateData('quarterly', selectedQuarterlyMetric);
+    }
+
+    if (!props.annualData) {
+      props.updateData('annual', selectedAnnualMetric);
+    }   
+  }
+
+  formatQuarterlyMetric = (type) => {
+    
+    var selected = this.props.quarterlyMetrics.filter(obj => { 
+      return obj.name === type 
+    });
+
+    return selected[0].title;
+
+    /**
+    switch(type) {
+      case 'totalRevenue': return 'Revenue';
+      case 'grossProfit': return 'Gross Profit';
+      case 'operatingIncome': return 'Operating Income';
+      case 'netIncome': return 'Net Income';
+      default: return "Selected Metric";
+    } **/
+  }
+
+  handleChange = name => event => {
+    this.setState({
+      [name]: event.target.value,
+    });
+
+    this.props.updateData(name === 'selectedAnnualMetric' ? 'annual' : 'quarterly', event.target.value);
+  };
+
+  render() {
+    const { classes, quarterlyData, annualData, quarterlyMetrics, annualMetrics } = this.props;
+    const { selectedQuarterlyMetric, selectedAnnualMetric } = this.state;
+
+    if (!quarterlyData) {
+      return <ErrorMessage message="Sorry! We don't have financial data for this stock yet." />;
+    }
+
+    return(
+    <div>
+    { quarterlyData && <Financials classes={classes} type='quarterly' chartData={quarterlyData} selectedMetric={selectedQuarterlyMetric} handleChange={this.handleChange} availableMetrics={quarterlyMetrics} />}
+    { annualData && <Financials classes={classes} type='annual' chartData={annualData} selectedMetric={selectedAnnualMetric} handleChange={this.handleChange} availableMetrics={annualMetrics} />}
+    </div>
     );
   }
 }
 
-StockChart.propTypes = {
+FinancialsChart.propTypes = {
   classes: PropTypes.object.isRequired,
-  chartData: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
+  quarterlyData: PropTypes.array,
+  quarterlyMetrics: PropTypes.array,
+  annualData: PropTypes.array,
+  annualMetrics: PropTypes.array, 
+  updateData: PropTypes.func.isRequired,  
 };
 
-export default withStyles(styles, { withTheme: true })(StockChart);
+export default withStyles(styles, { withTheme: true })(FinancialsChart);

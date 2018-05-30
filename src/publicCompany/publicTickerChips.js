@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Chip from 'material-ui/Chip';
-import Paper from 'material-ui/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import Chip from '@material-ui/core/Chip';
+import Paper from '@material-ui/core/Paper';
 import { colorsArray } from '../shared/sharedFunctions.js';
-import CloseIcon from 'material-ui-icons/Cancel';
-import IconButton from 'material-ui/IconButton';
+import CloseIcon from '@material-ui/icons/Cancel';
+import IconButton from '@material-ui/core/IconButton';
+import ErrorMessage from '../shared/message.js';
 
 const styles = theme => ({
   root: {
@@ -25,24 +26,33 @@ const styles = theme => ({
 });
 
 class TickerArray extends React.Component {
+  state = {
+    error: undefined
+  }
+
   handleDelete = data => () => {
     if (data === this.props.chipData[0]) {
-      alert('sorry! cannot delete the original company');
+      this.setState({ error: 'Sorry! Cannot delete the original ticker'});
     } else {
       this.props.deleteComp(data);
     }
   };
 
+  handleClose = () => {
+    this.setState({error: undefined});
+  }
+
   render() {
     const { classes, chipData } = this.props;
     var deleteIcon = <IconButton className={classes.closeButton}><CloseIcon /></IconButton>
 
-    if (!chipData) {
+    if (!chipData || chipData.length === 1) {
       return null;
     }
 
     return (
       <Paper className={classes.root}>
+        {this.state.error && <ErrorMessage text={this.state.error} handleClose={this.handleClose} open={this.state.error && true}  anchorV='top' anchorH='center'/>}
         {chipData.map((data, index) => {
           return (
             <Chip

@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Snackbar from 'material-ui/Snackbar';
-import IconButton from 'material-ui/IconButton';
-import CloseIcon from 'material-ui-icons/Close';
+import { withStyles } from '@material-ui/core/styles';
+import Snackbar from '@material-ui/core/Snackbar';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 
 const styles = theme => ({
   close: {
@@ -14,28 +14,28 @@ const styles = theme => ({
 
 class Message extends React.Component {
   render() {
-    const { classes } = this.props;
+    const { classes, open, handleClose, text, anchorH, anchorV } = this.props;
     return (
       <div>
         <Snackbar
           anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
+            vertical: anchorV,
+            horizontal: anchorH,
           }}
-          open={this.props.open}
+          open={open}
           autoHideDuration={6000}
-          onClose={this.props.handleClose}
+          onClose={handleClose}
           SnackbarContentProps={{
             'aria-describedby': 'message-id',
           }}
-          message={<span id="message-id">{this.props.text}</span>}
+          message={<span id="message-id">{text}</span>}
           action={[
             <IconButton
               key="close"
               aria-label="Close"
               color="inherit"
               className={classes.close}
-              onClick={this.props.handleClose}
+              onClick={handleClose}
             >
               <CloseIcon />
             </IconButton>,
@@ -46,8 +46,18 @@ class Message extends React.Component {
   }
 }
 
+Message.defaultProps = {
+  anchorH: 'center',
+  anchorV: 'bottom'
+};
+
 Message.propTypes = {
   classes: PropTypes.object.isRequired,
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+  anchorV: PropTypes.string,
+  anchorH: PropTypes.string
 };
 
 export default withStyles(styles)(Message);

@@ -1,13 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
-import Card, { CardContent, CardHeader } from 'material-ui/Card';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+
+import Divider from '@material-ui/core/Divider';
 import NumberFormat from 'react-number-format';
-import List, { ListItem, ListItemSecondaryAction, ListItemText } from 'material-ui/List';
-import Divider from 'material-ui/Divider';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 const moment = require('moment');
 
 const styles = theme => ({

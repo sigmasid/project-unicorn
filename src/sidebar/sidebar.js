@@ -1,28 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
-import { MenuList, MenuItem } from 'material-ui/Menu';
-import { ListItemIcon, ListItemText } from 'material-ui/List';
-import Divider from 'material-ui/Divider';
-import Drawer from 'material-ui/Drawer';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
 
-import ContactIcon from 'material-ui-icons/Send';
-import TermsIcon from 'material-ui-icons/Description';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 
-import SectorsIcon from 'material-ui-icons/Dashboard';
-import MarketsIcon from 'material-ui-icons/Equalizer';
-import TrendingIcon from 'material-ui-icons/Whatshot';
-import StartupsIcon from 'material-ui-icons/ChildCare';
-import NewsIcon from 'material-ui-icons/Comment';
+import Divider from '@material-ui/core/Divider';
+import Drawer from '@material-ui/core/Drawer';
 
-import SignupIcon from 'material-ui-icons/Bookmark';
+import ContactIcon from '@material-ui/icons/Send';
+import TermsIcon from '@material-ui/icons/Help';
+
+import SectorsIcon from '@material-ui/icons/Dashboard';
+import MarketsIcon from '@material-ui/icons/Equalizer';
+import TrendingIcon from '@material-ui/icons/Whatshot';
+import StartupsIcon from '@material-ui/icons/ChildCare';
+import NewsIcon from '@material-ui/icons/Comment';
+import ReceiptIcon from '@material-ui/icons/Receipt';
+
+import SignupIcon from '@material-ui/icons/Bookmark';
 import CompanyDetailMenu from './companyMenu.js';
-import Hidden from 'material-ui/Hidden';
+import SectorMenu from './sectorMenu.js';
+import Hidden from '@material-ui/core/Hidden';
 
 import { Route, Link } from 'react-router-dom'
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -58,9 +64,15 @@ const BottomMenu = (props) => {
 
   return(
   <MenuList className={classes.bottomMenu}>
-    <MenuItem button component={Link} to={'/terms'} key={'terms'} className={classes.menuItem} selected={active === 'terms'}>
+    <MenuItem button component={Link} to={'/methodology'} key={'methodology'} className={classes.menuItem} selected={active === 'methodology'}>
       <ListItemIcon className={classes.icon}>
         <TermsIcon />
+      </ListItemIcon>      
+      <ListItemText primary="Methodology" classes={{ primary: classes.primary }}  />
+    </MenuItem>  
+    <MenuItem button component={Link} to={'/terms'} key={'terms'} className={classes.menuItem} selected={active === 'terms'}>
+      <ListItemIcon className={classes.icon}>
+        <ReceiptIcon />
       </ListItemIcon>      
       <ListItemText primary="Terms" classes={{ primary: classes.primary }}  />
     </MenuItem>
@@ -70,7 +82,7 @@ const BottomMenu = (props) => {
       </ListItemIcon>
       <ListItemText primary="Contact" classes={{ primary: classes.primary }}  />
     </MenuItem>    
-    <MenuItem button key={'signup'} className={classes.menuItem} >
+    <MenuItem button key={'signup'} className={classes.menuItem} onClick={props.showEmailCapture} >
       <ListItemIcon className={classes.icon}>
         <SignupIcon />
       </ListItemIcon>
@@ -82,7 +94,7 @@ const BottomMenu = (props) => {
 
 class SideBar extends React.Component {
   render() {
-    const {classes, match} = this.props;
+    const {classes, match, sectors, getSectors, techSectors, getTechSectors, showEmailCapture} = this.props;
     var active = match.params.active;
 
     return(
@@ -102,12 +114,13 @@ class SideBar extends React.Component {
               </ListItemIcon>
               <ListItemText primary="Markets" classes={{ primary: classes.primary }} />
             </MenuItem>
-            <MenuItem button component={Link} to={'/sectors'} key={'sectors'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'sectors'}>
+            <MenuItem button component={Link} to={'/sectors'} key={'sectors'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'sectors' && match.isExact === true} >
               <ListItemIcon className={classes.icon}>
                 <SectorsIcon />
               </ListItemIcon>      
               <ListItemText primary="Sectors" classes={{ primary: classes.primary }}  />
             </MenuItem>
+            <Route path="/sectors/:detail" render={(props) => (<SectorMenu {...props}  open={active === 'sectors'} sectors={sectors} getSectors={getSectors} techSectors={techSectors} getTechSectors={getTechSectors}/>)} />
             <MenuItem button component={Link} to={'/startups'} key={'startups'} classes={{root: classes.menuItem, selected: classes.selectedMenuItem}} selected={active === 'startups'}>
               <ListItemIcon className={classes.icon}>
                 <StartupsIcon />
@@ -122,7 +135,7 @@ class SideBar extends React.Component {
             </MenuItem>   
           </MenuList>
           <Divider />
-          <BottomMenu classes={classes} active={active} />
+          <BottomMenu classes={classes} active={active} showEmailCapture={showEmailCapture} />
         </Drawer>
       </Hidden>
     );

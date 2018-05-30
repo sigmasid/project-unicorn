@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Chip from 'material-ui/Chip';
-import Paper from 'material-ui/Paper';
-import { CardActions } from 'material-ui/Card';
+import { withStyles } from '@material-ui/core/styles';
+import Chip from '@material-ui/core/Chip';
+import Paper from '@material-ui/core/Paper';
+import CardActions from '@material-ui/core/CardActions';
 import classNames from 'classnames';
-import Avatar from 'material-ui/Avatar';
+import Avatar from '@material-ui/core/Avatar';
+
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -70,12 +72,12 @@ class ChipsArray extends React.Component {
   };
 
   render() {
-    const { classes, categories, handleDelete, selectedCategoryName } = this.props;
+    const { classes, categories, selectedCategoryName, sorted } = this.props;
 
     return (
       <CardActions className={classes.root}>
         <Paper className={classes.paper}>
-          {Object.keys(categories).map(category => {
+          {sorted.map(category => {
             return (
               <Chip key={category} 
                     onClick={() => this.handleClick(category)} 

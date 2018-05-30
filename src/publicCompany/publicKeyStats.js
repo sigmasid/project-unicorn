@@ -1,25 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
-import {lightBlue} from 'material-ui/colors';
-import Card, { CardContent, CardHeader, CardActions } from 'material-ui/Card';
-import NumberFormat from 'react-number-format';
-import List, { ListItem, ListItemSecondaryAction, ListItemText } from 'material-ui/List';
-import Divider from 'material-ui/Divider';
-import ExpansionIcon from 'material-ui-icons/ExpandMore';
-import IconButton from 'material-ui/IconButton';
-import Typography from 'material-ui/Typography';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+
+import Divider from '@material-ui/core/Divider';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import IconButton from '@material-ui/core/IconButton';
 import Loading from '../shared/loading.js';
 
-const util = require('util'); //print an object
+import NumberFormat from 'react-number-format';
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   card: {
     margin: 20
-  },
-  changeInput: {
-    color: lightBlue[500]
   },
   header: {
   	textAlign: 'left'
@@ -77,8 +81,126 @@ const styles = theme => ({
   }
 });
 
+ const formatMetric = metric => {
+  var returnObj = {};
+  if (!metric) {
+    return returnObj;
+  }
+
+  if (metric > 1000000000) {
+    returnObj.value = (metric / 1000000000).toFixed(2);
+    returnObj.suffix = 'B';
+  } else if (metric > 1000000 || metric < -1000000) {
+    returnObj.value = (metric / 1000000).toFixed(2);
+    returnObj.suffix = 'M';
+  } else {
+    returnObj.value = metric.toFixed(2);
+    returnObj.suffix = '';    
+  }
+
+  return returnObj;  
+}
+
+const ExpandedLeft = (props) => {
+  var {stats, classes} = props;
+
+  return (
+    <div>
+    <Divider />            
+    <ListItem key={'day50MovingAvg'} className={classes.listItem}>
+      <ListItemText primary={"50 Day Moving Avg"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.day50MovingAvg ? <NumberFormat value={stats.day50MovingAvg.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue}/> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem>
+    <Divider />            
+    <ListItem key={'day200MovingAvg'} className={classes.listItem}>
+      <ListItemText primary={"200 Day Moving Avg"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.day200MovingAvg ? <NumberFormat value={stats.day200MovingAvg.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem> 
+    <Divider />            
+    <ListItem key={'month1ChangePercent'} className={classes.listItem}>
+      <ListItemText primary={"1 Month Change"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.month1ChangePercent ? <NumberFormat value={(stats.month1ChangePercent * 100).toFixed(2)} displayType={'text'} thousandSeparator={true} suffix={'%'} className={classes.quoteValue}/> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem>
+    <Divider />            
+    <ListItem key={'ytdChangePercent'} className={classes.listItem}>
+      <ListItemText primary={"YTD Change"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.ytdChangePercent ? <NumberFormat value={(stats.ytdChangePercent * 100).toFixed(2)} displayType={'text'} thousandSeparator={true} suffix={'%'} className={classes.quoteValue} /> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem>
+    <Divider />            
+    <ListItem key={'year1ChangePercent'} className={classes.listItem}>
+      <ListItemText primary={"1 Year Change"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.year1ChangePercent ? <NumberFormat value={(stats.year1ChangePercent * 100).toFixed(2)} displayType={'text'} thousandSeparator={true} suffix={'%'} className={classes.quoteValue} /> : '-' }
+      </ListItemSecondaryAction>
+    </ListItem>  
+    </div>    
+  );
+}
+
+const ExpandedRight = (props) => {
+  var {stats, classes} = props;
+
+  return (
+    <div>
+    <Divider />            
+    <ListItem key={'LTM revenue'} className={classes.listItem}>
+      <ListItemText primary={"LTM Revenue"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        <NumberFormat value={formatMetric(stats.revenue).value} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatMetric(stats.revenue).suffix} className={classes.quoteValue}/>
+      </ListItemSecondaryAction>
+    </ListItem>
+    <Divider />            
+    <ListItem key={'LTM EBITDA'} className={classes.listItem}>
+      <ListItemText primary={"LTM EBITDA"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.EBITDA ? <NumberFormat value={formatMetric(stats.EBITDA).value} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatMetric(stats.EBITDA).suffix} className={classes.quoteValue} /> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem>
+    <Divider />            
+    <ListItem key={'LTM EPS'} className={classes.listItem}>
+      <ListItemText primary={"LTM EPS"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        {stats.ttmEPS ? <NumberFormat value={formatMetric(stats.ttmEPS).value} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-' }
+      </ListItemSecondaryAction>
+    </ListItem>  
+    <Divider />            
+    <ListItem key={'cash'} className={classes.listItem}>
+      <ListItemText primary={"Cash"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        { stats.cash ? <NumberFormat value={formatMetric(stats.cash).value} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatMetric(stats.cash).suffix} className={classes.quoteValue} /> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem>
+    <Divider />            
+    <ListItem key={'debt'} className={classes.listItem}>
+      <ListItemText primary={"Debt"} classes={{primary: classes.listLabel}}/>
+      <ListItemSecondaryAction>
+        { stats.debt ? <NumberFormat value={formatMetric(stats.debt).value} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatMetric(stats.debt).suffix} className={classes.quoteValue} /> : '-'}
+      </ListItemSecondaryAction>
+    </ListItem> 
+    </div>    
+  );
+}
+
 
 class KeyStats extends React.Component {
+  constructor (props) {
+    super(props);
+
+    this.state = { 
+      expanded: false
+    }
+
+    this.handleExpand = this.handleExpand.bind(this);
+  }
+
   getMetric(value) {
     var formattedValue = {};
 
@@ -105,8 +227,16 @@ class KeyStats extends React.Component {
     return formattedValue;
   }
 
+  handleExpand() {
+    this.setState({
+      expanded: !this.state.expanded
+    })
+  }
+
   render() {
-    const { classes, quote } = this.props;
+    const { classes, quote, stats, priceObj } = this.props;
+    const { expanded } = this.state;
+
     if (!quote) {
       return <Loading />
     }
@@ -117,7 +247,7 @@ class KeyStats extends React.Component {
       <Card className={classes.card}>
         <CardHeader 
           title="Key Stats"
-          subheader={quote.symbol+": "+quote.primaryExchange}
+          subheader={quote.symbol+": "+quote.primaryExchange+(priceObj && priceObj.latestPrice ? " (IEX Realtime Price)" : "")}
           className={classes.header}
         />
         <CardContent className={classes.content}>
@@ -132,71 +262,73 @@ class KeyStats extends React.Component {
             <ListItem key={'volume'} className={classes.listItem}>
               <ListItemText primary={"Volume"} classes={{primary: classes.listLabel}}/>
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.latestVolume} displayType={'text'} thousandSeparator={true} className={classes.quoteValue} />
+                {quote.latestVolume ? <NumberFormat value={quote.latestVolume} displayType={'text'} thousandSeparator={true} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
               </ListItem>                
             <Divider />   
             <ListItem key={'avgVolume'} className={classes.listItem}>
               <ListItemText primary={"Avg Volume"} classes={{primary: classes.listLabel}} />
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.avgTotalVolume} displayType={'text'} thousandSeparator={true} className={classes.quoteValue} />
+                {quote.avgTotalVolume ? <NumberFormat value={quote.avgTotalVolume} displayType={'text'} thousandSeparator={true} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
             </ListItem>
             <Divider />                
             <ListItem key={'yearLow'} className={classes.listItem}>
               <ListItemText primary={"52 Week Low"} classes={{primary: classes.listLabel}}/>
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.week52Low} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} />
+                {quote.week52Low ? <NumberFormat value={ quote.week52Low.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>                            
             </ListItem>
             <Divider />            
             <ListItem key={'yearHigh'} className={classes.listItem}>
               <ListItemText primary={"52 Week High"} classes={{primary: classes.listLabel}}/>
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.week52High} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} />
+                {quote.week52High ? <NumberFormat value={quote.week52High.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
             </ListItem>             
+            {expanded && <ExpandedLeft stats={stats} classes={classes} />}            
           </List>
           <List className={classes.statsListRight}>
             <ListItem key={'previous'} className={classes.listItem}>
               <ListItemText primary={"Previous Close"} classes={{primary: classes.listLabel}} />
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.previousClose.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} />
+                {quote.previousClose ? <NumberFormat value={quote.previousClose.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
             </ListItem>
             <Divider />
             <ListItem key={'open'} className={classes.listItem}>
               <ListItemText primary={"Open"} classes={{primary: classes.listLabel}} />
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.open.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} />
+                {quote.open ? <NumberFormat value={ quote.open.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
             </ListItem>
             <Divider />            
             <ListItem key={'todayLow'} className={classes.listItem}>
               <ListItemText primary={"Today's Low"} classes={{primary: classes.listLabel}}/>
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.low.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue}/>
+                {quote.low ? <NumberFormat value={quote.low.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue}/> : '-'}
               </ListItemSecondaryAction>
             </ListItem>
             <Divider />            
             <ListItem key={'todayHigh'} className={classes.listItem}>
               <ListItemText primary={"Today's High"} classes={{primary: classes.listLabel}}/>
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.high.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} />
+                {quote.high ? <NumberFormat value={ quote.high.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
             </ListItem>
             <Divider />            
             <ListItem key={'todayClose'} className={classes.listItem}>
               <ListItemText primary={"Close"} classes={{primary: classes.listLabel}}/>
               <ListItemSecondaryAction>
-                <NumberFormat value={quote.close.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} />
+                {quote.close ? <NumberFormat value={ quote.close.toFixed(2)} displayType={'text'} thousandSeparator={true} prefix={'$'} className={classes.quoteValue} /> : '-'}
               </ListItemSecondaryAction>
-            </ListItem>                    
+            </ListItem>  
+            {expanded && <ExpandedRight stats={stats} classes={classes} />}                
           </List>
         </CardContent>
         <CardActions className={classes.cardActions} >
-          <IconButton aria-label="more" className={classes.button}>
-            <ExpansionIcon />
+          <IconButton aria-label="more" className={classes.button} onClick={this.handleExpand}>
+            {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </CardActions>    
       </Card>

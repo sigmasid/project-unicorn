@@ -1,17 +1,22 @@
 import React from 'react';
-import { withStyles } from 'material-ui/styles';
-import Paper from 'material-ui/Paper';
-import Button from 'material-ui/Button';
-import Typography from 'material-ui/Typography';
-import DoneIcon from 'material-ui-icons/Done';
-import CloseIcon from 'material-ui-icons/Close';
-import ThumbsUpIcon from 'material-ui-icons/ThumbUp';
-import { FormControl, FormHelperText } from 'material-ui/Form';
-import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
-import IconButton from 'material-ui/IconButton';
+import { withStyles } from '@material-ui/core/styles';
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
-import { CircularProgress } from 'material-ui/Progress';
+
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import DoneIcon from '@material-ui/icons/Done';
+import CloseIcon from '@material-ui/icons/Close';
+import ThumbsUpIcon from '@material-ui/icons/ThumbUp';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import IconButton from '@material-ui/core/IconButton';
+
 import Cookies from 'universal-cookie';
 
 const styles = theme => ({
@@ -106,7 +111,7 @@ class EmailSignup extends React.Component {
       email: this.state.email,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     })
-    .then(function() {
+    .then(() => {
         self.setState(
           { 
             success: true, 
@@ -126,10 +131,9 @@ class EmailSignup extends React.Component {
         const cookies = new Cookies();
         cookies.set('showEmailCapture', false, { path: '/' });
     })
-    .catch(function(error) {
+    .catch( error => {
         // The document probably doesn't exist.
-        //self.setState({ emailCapture: false, loading: false });
-        console.error("Error updating document: ", error);
+        self.setState({ emailCapture: false, loading: false, error: error });
     });
   }
 

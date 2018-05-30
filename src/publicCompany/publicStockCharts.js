@@ -1,27 +1,34 @@
 import React, { Component } from 'react'
 
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import { findDOMNode } from 'react-dom';
 
-import Card, { CardContent, CardHeader } from 'material-ui/Card';
-import Chip from 'material-ui/Chip';
-import Paper from 'material-ui/Paper';
-import Tabs, { Tab } from 'material-ui/Tabs';
-import TextField from 'material-ui/TextField';
-import { InputAdornment } from 'material-ui/Input';
-import IconButton from 'material-ui/IconButton';
-import AddIcon from 'material-ui-icons/AddCircle';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
+import Chip from '@material-ui/core/Chip';
+import Paper from '@material-ui/core/Paper';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+
+import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
+
+import AddIcon from '@material-ui/icons/AddCircle';
+import CloseIcon from '@material-ui/icons/Close';
 
 import Chart from './stockChart.js';
 import TickersList from './publicTickerChips.js';
 import Loading from '../shared/loading.js';
 import { getDurationLabel } from '../shared/sharedFunctions.js';
-import classNames from 'classnames';
-import { findDOMNode } from 'react-dom';
-import CloseIcon from 'material-ui-icons/Close';
 import RenderSuggestionsContainer from '../shared/searchSuggestions.js';
+import MaxMessage from '../shared/message.js';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   card: {
@@ -94,9 +101,9 @@ const styles = theme => ({
       display: 'none'
     }
   },
-  searchSuggestions: {
-
-  },
+  tabRoot: {
+    minWidth: 50
+  }
 });
 
 class StockChart extends Component {
@@ -105,15 +112,12 @@ class StockChart extends Component {
 
     this.state = { 
       anchorEl: null,
-      searchText: ''   
+      searchText: '',
+      shouldRedraw: false   
     }
 
     this.createChartDurations = this.createChartDurations.bind(this);
     this.handleChange = this.handleChange.bind(this);    
-  }
-
-  componentWillReceiveProps(nextProps) {
-    //
   }
 
   handleClick = duration => {
@@ -126,40 +130,87 @@ class StockChart extends Component {
     if (this.props.selectedDuration !== value) {
       this.props.changeDuration(value);
     }
-    this.setState({ value });
+    this.setState({ value, shouldRedraw: true });
   };
 
+  /**
   handleChange = name => event => {
     this.setState({
       [name]: event.target.value,
       anchorEl: findDOMNode(this.searchBox),
+      shouldRedraw: false,
       searchResults: this.props.getSuggestions(event.target.value),
     });
+  }; **/
+
+  handleChange = name => event =>  {
+    var searchText = event.target.value;
+
+    if (!this.state.initialLoadComplete) {
+      var loading = {"loading": {"name": "Searching..."}};
+
+      this.setState({
+        anchorEl: findDOMNode(this.searchBox),
+        initialLoadComplete: true,
+        searchResults: loading,
+        shouldRedraw: false,        
+        searchText: searchText
+      });
+    } else {
+      this.setState({    
+        searchText: searchText
+      });      
+    }
+    
+    this.props.getSuggestions(searchText)
+    .then( data => {
+      this.setState({
+        searchResults: data
+      });
+    })
+    .catch( err => {
+      this.setState({
+        anchorEl: undefined,
+        results: undefined,
+        searchText: searchText
+      });
+    })
+    return null;
   };
 
   handleAddComp = (ticker) => {
-    this.props.addComp(ticker);
-    this.handleClose();
+    /// if total comps is greater than 5 ignore, else add
+
+    if (Object.keys(this.props.chartData).length < 2) {
+      this.setState({shouldRedraw: true});
+      this.props.addComp(ticker);
+      this.handleClose();
+    } else {
+      /// show snackbar
+      this.setState({maxCompsReached: true});
+    }
   }
 
   handleClose = () => {
     this.setState({
       anchorEl: null,
       searchResults: undefined,
-      searchText: ''
+      searchText: '',
+      maxCompsReached: undefined
     });
   }
 
   createChartDurations() {
   const { classes, chartDurations, selectedDuration } = this.props;
+  var self = this;
 
     if (!chartDurations) {
       return null;
     }
 
-    var chips = chartDurations.map(function(key, index) {
+    var chips = chartDurations.map( (key, index) => {
       return (
-          <Chip key={index} label={ getDurationLabel(key) } onClick={() => this.handleClick(key)} className={selectedDuration === key ? classNames(classes.chip, classes.selectedChip) : classes.chip} />
+          <Chip key={index} label={ getDurationLabel(key) } onClick={() => self.handleClick(key)} className={selectedDuration === key ? classNames(classes.chip, classes.selectedChip) : classes.chip} />
         );
       })
     return(<div className={classes.chipsContainer}>{chips}</div>); 
@@ -168,9 +219,8 @@ class StockChart extends Component {
   searchBox = null;
 
   render() {
-    const { classes, chartData, selectedDuration, chipData, deleteComp } = this.props;
-    const { searchResults, anchorEl } = this.state;
-    console.log("search results are "+util.inspect(searchResults));
+    const { classes, chartData, selectedDuration, chipData, deleteComp, shouldRedraw } = this.props;
+    const { searchResults, anchorEl, maxCompsReached } = this.state;
 
     const tabs = 
       <Paper className={classes.tabsContainer}>
@@ -181,14 +231,14 @@ class StockChart extends Component {
           textColor="primary"
           fullWidth
         >
-          <Tab label="1D" value="1d" />
-          <Tab label="1W" value="1w" />
-          <Tab label="1M" value="1m"  />
-          <Tab label="3M" value="3m" />
-          <Tab label="6M" value="6m" />
-          <Tab label="1Y" value="1y" />
-          <Tab label="2Y" value="2y" />
-          <Tab label="5Y" value="5y" />          
+          <Tab label="1D" value="1d" className={classes.tabRoot} />
+          <Tab label="1W" value="1w" className={classes.tabRoot} />
+          <Tab label="1M" value="1m" className={classes.tabRoot} />
+          <Tab label="3M" value="3m" className={classes.tabRoot} />
+          <Tab label="6M" value="6m" className={classes.tabRoot} />
+          <Tab label="1Y" value="1y" className={classes.tabRoot} />
+          <Tab label="2Y" value="2y" className={classes.tabRoot} />
+          <Tab label="5Y" value="5y" className={classes.tabRoot} />          
         </Tabs>
       </Paper>
 
@@ -216,11 +266,12 @@ class StockChart extends Component {
         } />
       <CardContent className={classes.cardContent} >
         { tabs }
-        { this.createChartDurations(classes) }
-        { chartData && <Chart chartData={chartData} duration={selectedDuration} /> }
+        { this.createChartDurations() }
+        { chartData && <Chart chartData={chartData} duration={selectedDuration} shouldRedraw={shouldRedraw} /> }
         { !chartData && <Loading /> }
       </CardContent>
       <TickersList chipData={chipData} deleteComp={deleteComp} />
+      {maxCompsReached && <MaxMessage text={"Sorry, you can only add up to 5 comps"} handleClose={this.handleClose} open={maxCompsReached} anchorV='top' anchorH='center' />}
     </Card>
     );
   }

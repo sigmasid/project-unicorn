@@ -1,21 +1,28 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Button from 'material-ui/Button';
-import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
-import { FormControl, FormHelperText } from 'material-ui/Form';
-import Popover from 'material-ui/Popover';
-import Typography from 'material-ui/Typography';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
+import Popover from '@material-ui/core/Popover';
+import Typography from '@material-ui/core/Typography';
 import { findDOMNode } from 'react-dom';
 import { Link } from 'react-router-dom';
 
-import {pink, lightBlue} from 'material-ui/colors';
-import Grid from 'material-ui/Grid';
-import Card, { CardContent, CardHeader } from 'material-ui/Card';
-import Icon from 'material-ui/Icon';
-import SvgIcon from 'material-ui/SvgIcon';
+import {pink, lightBlue} from '@material-ui/core/colors';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
+import Icon from '@material-ui/core/Icon';
+import SvgIcon from '@material-ui/core/SvgIcon';
 import NumberFormat from 'react-number-format';
-import Tooltip from 'material-ui/Tooltip';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import { getFormattedMetric, formatMetric, formatSuffix, parseValue, formatMultiple } from '../shared/sharedFunctions.js';
 
@@ -64,7 +71,7 @@ const styles = theme => ({
     padding: '10px'
   },
   sourceLink: {
-    color: theme.palette.primary.light,
+    color: theme.palette.primary.main,
     cursor: 'pointer' 
   },
   formControl: {
@@ -83,26 +90,28 @@ const styles = theme => ({
   },
 });
 
-class NumberFormatCustom extends React.Component {
-  render() {
-    return (
-      <NumberFormat
-        {...this.props}
-        onValueChange={values => {
-          this.props.onChange({
-            target: {
-              value: values.value,
-            },
-          });
-        }}
-        thousandSeparator
-      />
-    );
-  }
+function NumberFormatCustom(props) {
+  const { inputRef, onChange, ...other } = props;
+
+  return (
+    <NumberFormat
+      {...other}
+      ref={inputRef}
+      onValueChange={values => {
+        onChange({
+          target: {
+            value: values.value,
+          },
+        });
+      }}
+      thousandSeparator
+    />
+  );
 }
 
 NumberFormatCustom.propTypes = {
-  onChange: PropTypes.func.isRequired,
+  inputRef: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired
 };
 
 const EqualIcon = props => (

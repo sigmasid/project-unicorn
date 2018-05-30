@@ -1,72 +1,52 @@
 import React, { Component } from 'react'
 import { Bar } from 'react-chartjs-2';
 import 'chartjs-plugin-datalabels';
-import { withStyles } from 'material-ui/styles';
-import { colorsArray } from '../shared/sharedFunctions.js';
+import { withStyles } from '@material-ui/core/styles';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
-const styles = () => ({
+const styles = theme => ({
+
 });
 
 class FinancialsChart extends Component {
   
-  constructor (props) {
-    super(props);
-    var newArray = (props.chartData[Object.keys(props.chartData)[0]].financials.financials).slice();
-
-    this.state = {
-      shouldRedraw: false,
-      chartData: newArray.reverse()
-    }
+  state = {
+    shouldRedraw: false,
   }
     
   componentWillReceiveProps(nextProps){
     //check redraw
   }
 
-  getChartLabels() {
-    const { chartData } = this.state;
-
-    return chartData.map( dataPoint => { 
-      return dataPoint.reportDate;
-    });
-  }
-
   getChartDataset(type) {
-    const { chartData, unit } = this.props;
+    const { chartData, unit, theme } = this.props;
 
-    return Object.keys(chartData).map((ticker, index) => {
-      //reverse does in place - so copy array by value first
-      var currentStockFinancials = chartData[ticker].financials.financials.slice();
-      var dataPoints = (currentStockFinancials.reverse()).map( dataPoint => { return dataPoint[type] / unit });
-
-      return {
-        label: ticker,
-        data: dataPoints,
-        borderColor: colorsArray[index],
-        backgroundColor: colorsArray[index],
-        datalabels: {
-          display: true,
-          color: 'black',
-          align: 'end',
-          anchor: 'end',
-          formatter: function(value, context) {
-            return '$'+value.toFixed(1);
-          }
+    return [{
+      label: 'financials',
+      data: chartData.map(obj => { return (obj.value / unit) }),
+      borderColor: theme.palette.secondary.light,
+      backgroundColor: theme.palette.secondary.light,
+      datalabels: {
+        display: true,
+        color: 'black',
+        align: 'end',
+        anchor: 'end',
+        formatter: function(value, context) {
+          return '$'+value.toFixed(2);
         }
       }
-    });    
+    }]
   }
 
   render() {
-    const { selectedMetric } = this.props;
+    const { chartData } = this.props;
 
     const data = (canvas) => {
     return {
-      labels: this.getChartLabels(),
+      labels: chartData.map(obj => { return obj.label }),
       type: 'bar',
-      datasets: this.getChartDataset(selectedMetric)
+      datasets: this.getChartDataset()
     }}
 
     return (
@@ -83,7 +63,7 @@ class FinancialsChart extends Component {
                 size: document.body.clientWidth <= 600 ? 12 : 16
               },
               formatter: function (value, context) {
-                return "$"+value.toFixed(1);
+                return "$"+value.toFixed(2);
               }
             }
           },
@@ -113,7 +93,7 @@ class FinancialsChart extends Component {
                 fontFamily: 'Roboto',
                 fontSize: document.body.clientWidth <= 600 ? 12 : 16,
                 formatter: function (value, context) {
-                return value.toFixed(1);
+                return value.toFixed(2);
                 }
               }
             }],

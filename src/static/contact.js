@@ -1,17 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import TextField from 'material-ui/TextField';
-import Paper from 'material-ui/Paper';
-import Typography from 'material-ui/Typography';
-import Button from 'material-ui/Button';
-import { CircularProgress } from 'material-ui/Progress';
-import Snackbar from 'material-ui/Snackbar';
+import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import {Helmet} from "react-helmet";
+
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import ReactGA from 'react-ga';
-import CheckIcon from 'material-ui-icons/Check';
-import classNames from 'classnames';
+
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Snackbar from '@material-ui/core/Snackbar';
+import CheckIcon from '@material-ui/icons/Check';
 
 const styles = theme => ({
   root: {
@@ -47,7 +50,7 @@ titleText: {
     color: 'white',
     marginTop: 30,
     padding: '10px 30px 10px 30px',
-    backgroundColor: theme.palette.primary[300],
+    backgroundColor: theme.palette.primary.main,
     boxShadow: theme.shadows[2],
     '&:active': {
       boxShadow: theme.shadows[8],
@@ -162,6 +165,10 @@ class Contact extends React.Component {
 
 	  return (
 	    <div className={classes.root}>
+        <Helmet>
+          <title>Contact Us</title>
+          <meta name="description" content="Send us your suggestions, comments and contributions!" />          
+        </Helmet>       
         <Paper className={classes.header} >
           <Typography variant="display3" className={classes.titleText}>
             Contact
@@ -213,7 +220,7 @@ class Contact extends React.Component {
           	onChange={this.handleChange('contactMessage')}
 	        />
 
-          <Button size="large" className={classNames(classes.button, classes.raisedButton)} onClick={() => this.handleSubmit()} disabled={loading} >
+          <Button size="large" color="primary" className={classNames(classes.button, classes.raisedButton)} onClick={() => this.handleSubmit()} disabled={loading} >
 		        Submit
           {loading && <CircularProgress size={24} className={classes.buttonProgress} color="inherit" />}
           {success && <CheckIcon size={24} className={classes.buttonProgress} color="inherit" />}

@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Typography from 'material-ui/Typography';
-import Paper from 'material-ui/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import {Helmet} from "react-helmet";
+
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
 import Items from './terms.json';
 
 const styles = theme => ({
@@ -55,7 +57,7 @@ const styles = theme => ({
   },
 });
 
-const termsWelcome = "WELCOME TO PROJECT UNICORN! WE ENCOURAGE YOU TO TAKE ADVANTAGE OF THE CONTENT AND FEATURES AVAILABLE ON THINKAPART.COM AND ALL THINKAPART-OWNED WEBSITES (EACH, A 'WEBSITE'). PLEASE READ THESE NON-NEGOTIABLE TERMS OF USE CAREFULLY BEFORE USING THE WEBSITE. BY CONTINUING TO USE THE WEBSITE, YOU (THE 'USER') AGREE TO BE BOUND BY THESE TERMS OF USE."
+const termsWelcome = "WELCOME TO PROJECT UNICORN! WE ENCOURAGE YOU TO TAKE ADVANTAGE OF THE CONTENT AND FEATURES AVAILABLE ON PROJECTUNICORN.CO AND ALL PROJECT UNICORN-OWNED WEBSITES (EACH, A 'WEBSITE'). PLEASE READ THESE NON-NEGOTIABLE TERMS OF USE CAREFULLY BEFORE USING THE WEBSITE. BY CONTINUING TO USE THE WEBSITE, YOU (THE 'USER') AGREE TO BE BOUND BY THESE TERMS OF USE."
 
 const TermsDetail = (props) => Object.keys(props.items).map((item, index) => {
   return(
@@ -70,6 +72,9 @@ function Terms(props) {
   const { classes } = props;
   return (
   <div className={classes.root}>
+    <Helmet>
+      <title>Terms & Conditions</title>
+    </Helmet>   
     <Paper className={classes.header} >
       <Typography variant="display3" className={classes.titleText}>
         Terms & Conditions

@@ -1,14 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Card, { CardHeader } from 'material-ui/Card';
-import Loading from '../shared/loading.js';
-import Avatar from 'material-ui/Avatar';
-import { Element } from '../shared/sharedFunctions.js';
-import classNames from 'classnames';
+import { withStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
 
-import pink from 'material-ui/colors/pink';
-import green from 'material-ui/colors/green';
+import Loading from '../shared/loading.js';
+import Avatar from '@material-ui/core/Avatar';
+import { Element } from '../shared/sharedFunctions.js';
+
+import pink from '@material-ui/core/colors/pink';
+import green from '@material-ui/core/colors/green';
+import Zoom from '@material-ui/core/Zoom';
 
 //const util = require('util'); //print an object
 const moment = require('moment');
@@ -20,6 +22,8 @@ const styles = theme => ({
   header: {
     textAlign: 'left',
     maxWidth: '60%',
+    paddingTop: 8,
+    paddingBottom: 8,
     [theme.breakpoints.down('md')]: {
       maxWidth: '100%',
       paddingRight: 0
@@ -80,7 +84,9 @@ function PriceQuote(props) {
   return (
     <div className={classes.priceContainer}>
       <div className={classes.lastPrice}>
-        <Element value={lastPrice} label={lastUpdate} classes={classes} elementClass={priceChangePercent > 0 ? classes.positiveChange : classes.negativeChange} prefix="$" />
+        <Zoom in={lastPrice && true}>
+          <Element value={lastPrice} label={lastUpdate} classes={classes} elementClass={priceChangePercent > 0 ? classes.positiveChange : classes.negativeChange} prefix="$" />
+        </Zoom>
       </div>
       <div className={classes.priceChange}>
         <Element value={priceChangePercent} label="Change Today" classes={classes} elementClass={priceChangePercent > 0 ? classes.positiveChange : classes.negativeChange} suffix="%" prefix={priceChangePercent > 0 ? '+' : ''} /> 
@@ -92,7 +98,7 @@ function PriceQuote(props) {
 
 class CompanyIntro extends React.Component {
   render() {
-    const { classes, company, priceObj } = this.props;
+    const { classes, company, priceObj, description } = this.props;
     if (company === undefined) {
       return <Loading />
     }
@@ -103,7 +109,7 @@ class CompanyIntro extends React.Component {
     <Card className={classes.card}>
       <div className={classes.sectionLeft}>
         <Avatar className={classes.tileAvatar}>{company.symbol}</Avatar>
-        <CardHeader title={company.companyName.toProperCase()} subheader={company.description} classes={{root: classes.header}} />
+        <CardHeader title={company.companyName.toProperCase()} subheader={description.description} classes={{root: classes.header}} />
         <PriceQuote lastPrice={(priceObj && priceObj.price) || company.latestPrice} lastUpdate={formattedTime} company={company} classes={classes} />
       </div>
     </Card>

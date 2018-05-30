@@ -13,11 +13,12 @@ import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
 import Divider from '@material-ui/core/Divider';
 
-import CompsChart from './compsChart.js';
+import CompsChart from './valuationsChart.js';
 import { getFormattedMetric, getPriorYear, maxRevenueMultiple, maxEBITDAMultiple, maxPEMultiple, SelectYear, SelectMetric } from '../shared/sharedFunctions.js';
 import Loading from '../shared/loading.js';
 import classNames from 'classnames';
 
+const moment = require('moment');
 //const util = require('util'); //print an object
 
 const styles = theme => ({
@@ -70,33 +71,37 @@ const styles = theme => ({
   }
 });
 
-const calcMultiples = (compSet, metric, year) => {
+const calcMultiples = (compSet, metric, year, detailed) => {
+  return detailed ? calcDetailedMultiples(compSet, metric, year) : calcIEXMultiples(compSet, metric); 
+}
+
+const calcDetailedMultiples = (compSet, metric, year) => {
   var comps=[];
   var lastUpdate = undefined;
   var useTicker = compSet.length > 10;
 
-  compSet.map(function(currentCompany) {
-    var debt = typeof(currentCompany.debt !== 'undefined') ? parseFloat(currentCompany.debt) : 0;
-    var minority_int = typeof(currentCompany.minority_int !== 'undefined') ? parseFloat(currentCompany.minority_int) : 0;
-    var cash = typeof(currentCompany.cash !== 'undefined') ? parseFloat(currentCompany.cash) : 0;
-    var lt_invest = typeof(currentCompany.lt_invest !== 'undefined') ? parseFloat(currentCompany.lt_invest) : 0;
+  compSet.map( currentCompany => {
+    var debt = (currentCompany.debt && parseFloat(currentCompany.debt)) || 0;
+    var minority_int = (currentCompany.minority_int && parseFloat(currentCompany.minority_int)) || 0;
+    var cash = (currentCompany.cash && parseFloat(currentCompany.cash)) || 0;
+    var lt_invest = (currentCompany.lt_invest && parseFloat(currentCompany.lt_invest)) || 0;
 
     var equity_val = currentCompany.last_price * currentCompany.shares_out;
     var currentEV = equity_val + debt + minority_int - cash - lt_invest;
-    var name = !useTicker || currentCompany.ticker.includes(':') ? currentCompany.name : currentCompany.ticker;
+    var ticker = !useTicker || currentCompany.ticker.includes(':') ? currentCompany.name : currentCompany.ticker;
 
     if (metric === 'rev' && !isNaN(currentCompany[metric+'_'+year])) {
       var _multiple1 = currentEV / currentCompany[metric+'_'+year];
-      comps[name] = _multiple1 > maxRevenueMultiple || _multiple1 < 0 ? 0 : _multiple1;
+      comps[ticker] = _multiple1 > maxRevenueMultiple || _multiple1 < 0 ? 0 : _multiple1;
     } else if (metric === 'ebitda' && !isNaN(currentCompany[metric+'_'+year])) {
       var _multiple2 = currentEV / currentCompany[metric+'_'+year];
-      comps[name] = _multiple2 > maxEBITDAMultiple || _multiple2 < 0 ? 0 : _multiple2;
+      comps[ticker] = _multiple2 > maxEBITDAMultiple || _multiple2 < 0 ? 0 : _multiple2;
     } else if (metric === 'eps' && !isNaN(currentCompany[metric+'_'+year])) {
       var _multiple3 = currentCompany.last_price / currentCompany[metric+'_'+year];
-      comps[name] = _multiple3 > maxPEMultiple || _multiple3 < 0 ? 0 : _multiple3;                 
+      comps[ticker] = _multiple3 > maxPEMultiple || _multiple3 < 0 ? 0 : _multiple3;                 
     } else if (metric === 'rev_growth' && !isNaN(currentCompany['rev_'+year])) {
       var _growth = (currentCompany['rev_'+year] / currentCompany['rev_'+getPriorYear(year)] - 1) * 100;
-      comps[name] = _growth > maxPEMultiple || _growth < -50 ? 0 : _growth;                 
+      comps[ticker] = _growth > maxPEMultiple || _growth < -50 ? 0 : _growth;                 
     }
 
     if ((lastUpdate === undefined && currentCompany.last_price_update !== undefined) || (currentCompany.last_price_update !== undefined && lastUpdate !== undefined && currentCompany.last_price_update > lastUpdate)) {
@@ -108,6 +113,32 @@ const calcMultiples = (compSet, metric, year) => {
 
   var sortedObj = sortProperties(comps);
   sortedObj.lastUpdate = lastUpdate;
+
+  return sortedObj;
+};
+
+const calcIEXMultiples = (compSet, metric) => {
+  var comps=[];
+
+  compSet.map( currentCompany => {    
+    var currentEV = currentCompany.marketcap + currentCompany.debt - currentCompany.cash;
+
+    if (metric === 'rev' && currentCompany.revenue) {
+      var _multiple1 = currentEV / currentCompany.revenue;
+      comps[currentCompany.symbol] = _multiple1 > maxRevenueMultiple || _multiple1 < 0 ? 0 : _multiple1;
+    } else if (metric === 'ebitda' && currentCompany.EBITDA) {
+      var _multiple2 = currentEV / currentCompany.EBITDA;
+      comps[currentCompany.symbol] = _multiple2 > maxEBITDAMultiple || _multiple2 < 0 ? 0 : _multiple2;
+    } else if (metric === 'eps' && currentCompany.ttmEPS) {
+      var _multiple3 = currentCompany.price / currentCompany.ttmEPS;
+      comps[currentCompany.symbol] = _multiple3 > maxPEMultiple || _multiple3 < 0 ? 0 : _multiple3;                 
+    }
+
+    return comps;
+  }); 
+
+  var sortedObj = sortProperties(comps);
+  sortedObj.lastUpdate = undefined;
 
   return sortedObj;
 };
@@ -134,13 +165,6 @@ const sortProperties = obj => {
   });
 
   returnObj.comps = sortable;
-
-  /**
-  var lowIndex = Math.ceil(sortable.length * (lowPercentile / 100)) - 1;
-  var highIndex = Math.ceil(sortable.length * (highPercentile / 100)) - 1; 
-  returnObj.lowMultiple = sortable[highIndex][1]; //flipped because values are reverse sorted
-  returnObj.highMultiple = sortable[lowIndex][1]; **/
-  returnObj.lowMultiple = calcRange(sortable, 'low'); //flipped because values are reverse sorted
   returnObj.highMultiple = calcRange(sortable, 'high');
   var half = Math.floor(sortable.length / 2);
   returnObj.median = sortable.length % 2 ? sortable[half][1] : (sortable[half - 1][1] + sortable[half][1]) / 2;
@@ -153,8 +177,6 @@ function calcRange(array, multipleType) {
     return array[0][1];
   } else {
     var half = Math.floor(array.length / 2);
-    //var editedArray = array.slice(1, array.length - 1);
-
     if (multipleType === 'low'){
       return array.length % 2 ? array[half][1] : (array[half - 1][1] + array[half][1]) / 2;
     } else {
@@ -163,59 +185,39 @@ function calcRange(array, multipleType) {
   }
 }
 
-function formatDate(dateIn) {
-   var yyyy = dateIn.getFullYear();
-   var mm = dateIn.getMonth()+1; // getMonth() is zero-based
-   var dd  = dateIn.getDate();
-   return String(mm + '/' + dd + '/' + yyyy); // Leading zeros for mm and dd
-}
-
 class CompanyComps extends Component {
   constructor (props) {
     super(props);
-    const compData = (this.props.compSet && this.props.compSet.length > 0) ? calcMultiples(this.props.compSet, this.props.selectedMetric, this.props.selectedYear) : undefined;
 
     this.state = { 
       selectedYear: this.props.selectedYear, 
       selectedMetric: this.props.selectedMetric,
-      compData: compData
+      compSet: props.compSet 
     }
 
-    if (this.props.setMultipleRange) {
-      this.props.setMultipleRange(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);
-    }
-    this.categories = this.categories.bind(this);
-    this.getStatType = this.getStatType.bind(this);
-    this.getStatSymbol = this.getStatSymbol.bind(this);
+    !props.compData && props.updateCompSet(props.selectedCategory);
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.compSet && nextProps.compSet !== this.props.compSet && nextProps.compSet.length > 0) {
-      const compData = (nextProps.compSet && nextProps.compSet.length > 0) ? calcMultiples(nextProps.compSet, nextProps.selectedMetric, nextProps.selectedYear) : undefined;
+      const compData = (nextProps.compSet && nextProps.compSet.length > 0) && calcMultiples(nextProps.compSet, nextProps.selectedMetric, nextProps.selectedYear, nextProps.categories);
 
       this.setState({
         compData: compData
       });
-
-      if (this.props.setMultipleRange) {
-        this.props.setMultipleRange(compData ? compData.lowMultiple : undefined, compData ? compData.highMultiple : undefined);
-      }
     }
   }
 
   //changing the target year or multiple type
   handleChange = name => event => {
-    var newCompData = calcMultiples(this.props.compSet, name === 'selectedMetric' ? event.target.value : this.state.selectedMetric, name === 'selectedYear' ? event.target.value : this.state.selectedYear);
+
+    var newCompData = calcMultiples(this.props.compSet, name === 'selectedMetric' ? event.target.value : this.state.selectedMetric, name === 'selectedYear' ? event.target.value : this.state.selectedYear, this.props.categories);
     
     this.setState({
       [name]: event.target.value,
       compData: newCompData
     });
 
-    //update parent
-    if (this.props.setMultipleRange) {
-      this.props.setMultipleRange(newCompData.lowMultiple, newCompData.highMultiple);
-    }
     this.props.handleChange(name, event.target.value);
   };
 
@@ -229,25 +231,19 @@ class CompanyComps extends Component {
     });
   };
 
-  handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-  };
-
-  categories = classes => {
+  getCategories = () => {
     var self = this;
+    var { categories, classes } = this.props;
 
-    if (this.props.categories === undefined) {
-      return null;
+    if (!categories) {
+      return <Chip key={'relevant'} label={'Peers'} className={classNames(classes.chip, classes.selectedChip)} />
     }
 
-    var chips = this.props.categories.map(function(key, index) {
+    return (Object.keys(categories).map( (key, index) => {
       return (
           <Chip key={index} label={key.toProperCase()} onClick={() => self.handleClick(key)} className={self.props.selectedCategory === key ? classNames(classes.chip, classes.selectedChip) : classes.chip} />
         );
-      })
-    return(<div>{chips}</div>); 
+      }));
   }
 
   getStatType = (metric) => {
@@ -267,10 +263,15 @@ class CompanyComps extends Component {
   }
 
   render() {
-    const { classes, theme, title, categories } = this.props;
-    const {compData, selectedMetric, selectedYear} = this.state;
+    const { classes, theme, title, categories, latestUpdate, selectedTicker, selectedName } = this.props;
+    const { compData, selectedMetric, selectedYear } = this.state;
+
+    if (!compData) {
+      return <Loading />
+    }
+
     const chartSubtitle = getFormattedMetric(selectedMetric, selectedYear) + this.getStatType(selectedMetric);
-    var lastUpdate = compData ? formatDate(new Date(compData.lastUpdate)) : null;
+    var formattedTime = latestUpdate ? moment(latestUpdate).format('MMM DD, YYYY') : (compData && moment(new Date(compData.lastUpdate)).format('MMM DD, YYYY'));
 
     return(
     <Card className={classes.card} >
@@ -278,25 +279,25 @@ class CompanyComps extends Component {
       <CardContent className={classes.cardContent} >
         <Grid container className={classes.root}>
           <Grid item xs={12}>
-            {categories === undefined ? null : <Typography variant="subheading" color="textSecondary">Comparables Categories</Typography> }
-            <div>{ this.categories(classes) }</div>
+            {categories && <Typography variant="subheading" color="textSecondary">Comparables Categories</Typography> }
+            {categories && this.getCategories() }
           </Grid>
 
           <Grid container className={classes.demo} justify="center" spacing={Number(theme.spacing.unit * 3)}>
             <Grid item key={'selectYear'}>
-              <SelectYear classes={classes} handleChange={this.handleChange} selectedYear={this.state.selectedYear} categories={true} />
+              <SelectYear classes={classes} handleChange={this.handleChange} selectedYear={selectedYear} categories={categories} />
             </Grid>
             <Grid item key={'selectMetric'}>
-              <SelectMetric classes={classes} handleChange={this.handleChange} selectedMetric={this.state.selectedMetric} categories={true} />
+              <SelectMetric classes={classes} handleChange={this.handleChange} selectedMetric={selectedMetric} categories={categories} />
             </Grid>
           </Grid>
         </Grid>
-        { compData !== undefined && compData.comps.length > 0 ? <CompsChart comps={compData.comps} median={compData.median} symbol={this.getStatSymbol(selectedMetric)} /> : <Loading /> }
+        <CompsChart comps={compData.comps} symbol={this.getStatSymbol(selectedMetric)} median={compData.median} selectedTicker={selectedTicker} selectedName={selectedName}/>
       </CardContent>
       <CardActions className={classes.footer} >
         <Divider className={classes.footerDivider} />
         <Typography variant="caption" color={'textSecondary'} gutterBottom>
-          Note: Pricing data as of { lastUpdate }.
+          Note: Pricing data as of { formattedTime }.
         </Typography>
       </CardActions>
     </Card>
@@ -307,6 +308,8 @@ class CompanyComps extends Component {
 CompanyComps.propTypes = {
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
+  selectedMetric: PropTypes.string,
+  selectedYear: PropTypes.string
 };
 
 export default withStyles(styles, { withTheme: true })(CompanyComps);

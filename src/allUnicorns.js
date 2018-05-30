@@ -1,17 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import List, { ListItem, ListItemText } from 'material-ui/List';
-import Typography from 'material-ui/Typography';
-import Paper from 'material-ui/Paper';
+import { withStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom'
-import Loading from './shared/loading.js';
-import SearchIcon from 'material-ui-icons/Search';
-import CloseIcon from 'material-ui-icons/Close';
-import Input, { InputAdornment } from 'material-ui/Input';
-import IconButton from 'material-ui/IconButton';
 
-const util = require('util'); //print an object
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+
+import Input from '@material-ui/core/Input';
+import InputAdornment from '@material-ui/core/InputAdornment';
+
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import Loading from './shared/loading.js';
+import SearchIcon from '@material-ui/icons/Search';
+import CloseIcon from '@material-ui/icons/Close';
+import IconButton from '@material-ui/core/IconButton';
+
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -78,9 +84,16 @@ const UnicornLeaderboard = (classes, unicorns) => {
 }
 
 class AllUnicorns extends React.Component {
-  state = {
-    results: undefined
-  };
+  constructor (props) {
+    super(props);
+    this.state = {
+      results: undefined
+    };
+    
+    if (!props.startupIndex) {
+      props.getStartupIndex();
+    }
+  }
 
   handleChange = prop => event => {
     var value = event.target.value;
@@ -103,7 +116,7 @@ class AllUnicorns extends React.Component {
   }
 
   render() {
-    const { classes, unicornList } = this.props;
+    const { classes, startupIndex } = this.props;
     const { results, searchText } = this.state;
 
     return (
@@ -134,7 +147,7 @@ class AllUnicorns extends React.Component {
               }
             />
           </div>
-          { UnicornLeaderboard(classes, results || unicornList) }
+          { UnicornLeaderboard(classes, results || startupIndex) }
         </Paper>          
       </div>
     );
@@ -143,7 +156,7 @@ class AllUnicorns extends React.Component {
 
 AllUnicorns.propTypes = {
   classes: PropTypes.object.isRequired,
-  unicornList: PropTypes.object.isRequired
+  startupIndex: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(AllUnicorns);

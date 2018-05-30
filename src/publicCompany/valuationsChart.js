@@ -3,6 +3,8 @@ import { Bar } from 'react-chartjs-2';
 import 'chartjs-plugin-datalabels';
 import { withStyles } from '@material-ui/core/styles';
 
+//const util = require('util'); //print an object
+
 const styles = theme => ({
 });
 
@@ -24,23 +26,19 @@ class CompChart extends Component {
   }
 
   render() {
-    const { comps, symbol, theme } = this.props;
-		const data = (canvas) => {
+    const { comps, symbol, selectedTicker, selectedName, theme } = this.props;
+    const data = (canvas) => {
+      const ctx = canvas.getContext("2d")
+      const gradient = ctx.createLinearGradient(0,0,0,500);
+      
+      gradient.addColorStop(0.3, 'rgba(254, 107, 139, 1.0)') // show this color at 0%;
+      gradient.addColorStop(0.9, 'rgba(255, 142, 83, 1.0)'); // show this color at 50%
 
-		return {
-			labels: comps.map( index => { return (comps.length > 10 && document.body.clientWidth > 960 ? (index[0].toProperCase()).split(' ') : index[0].toProperCase() )}),
-      type: 'line',
+		  return {
+			labels: comps.map( index => { return index[0].toProperCase() }),
+      type: 'bar',
 		  datasets: 
       [{
-      	label: 'Company Multiples',
-	      data: comps.map( index => { return index[1] }),
-        backgroundColor: theme.palette.secondary.light,        
-        type: 'bar',
-        datalabels: {
-          align: 'end',
-          anchor: 'end'
-        }},
-        {
           label: 'Comp Median',
           data: Array(comps.length).fill(this.props.median),
           type: 'line',
@@ -50,7 +48,7 @@ class CompChart extends Component {
           borderColor: 'black',
           backgroundColor: 'rgba(255,255,255,0.0)',
           datalabels: {
-            display: function(context) {
+            display: context => {
               return context.dataIndex === (context.dataset.data.length - 1); // display labels for last one
             },
             backgroundColor: 'black',
@@ -61,7 +59,21 @@ class CompChart extends Component {
               return 'Median: ' + (symbol === 'x' ? value.toFixed(1) + symbol : value.toFixed(0) + symbol);
             }
           }
-        }],
+        },
+        {
+      	label: 'Company Multiples',
+	      data: comps.map( index => { return index[1] }),
+        backgroundColor:  comps.map( comp => { 
+          return (comp[0].toLowerCase() === selectedTicker.toLowerCase() || (selectedName && comp[0].toLowerCase() === selectedName.toLowerCase())) ? gradient : theme.palette.secondary.light
+        }),
+        hoverBackgroundColor:  comps.map( comp => { 
+          return (comp[0].toLowerCase() === selectedTicker.toLowerCase() || (selectedName && comp[0].toLowerCase() === selectedName.toLowerCase())) ? gradient : theme.palette.secondary.light
+        }),        
+        datalabels: {
+          align: 'end',
+          anchor: 'end'
+        }}
+        ],
 		  }
 		}
 

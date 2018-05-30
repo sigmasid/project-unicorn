@@ -1,7 +1,5 @@
 import React from 'react';
-import { withStyles } from 'material-ui/styles';
-import * as firebase from "firebase";
-import firestore from "firebase/firestore";
+import { withStyles } from '@material-ui/core/styles';
 
 import SectorCard from './sectorCard.js';
 import SectorStats from './sectorStats.js';
@@ -10,9 +8,12 @@ import SimilarStartups from '../companyDetail/similarStartups.js';
 import ErrorMessage from '../shared/errorMessage.js';
 import {Helmet} from "react-helmet";
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
+  root: {
+    maxWidth: '100%'
+  }
 });
 
 class SectorDetails extends React.Component {
@@ -48,42 +49,41 @@ class SectorDetails extends React.Component {
   }
 
   getCategory(sectorID) {
-    var db = firebase.firestore();
-    var sectorRef = db.collection('categories').doc(sectorID);
-    return sectorRef.get()
-    .then(doc => {
-      if (doc.data()) {
-        var sector = doc.data();
-        var category = undefined;
-        const hashParts = window.location.hash.split('#');
 
-        if (hashParts.length > 1 && Object.keys(sector.type).includes(hashParts[1].replace('-', ' '))) {
-          const hash = hashParts[1].replace('-', ' ');
-          category = hash;
-        } else if (this.props.location.state && this.props.location.state.selectedCategory) {
-          category = this.props.location.state.selectedCategory
-        } else {
-          category = Object.keys(sector.type)[0];
-        }
+    return this.props.getDoc('categories',sectorID)
+    .then(sector => {
 
-        this.setState({
-          sector: sector,
-          sectorID: sectorID,
-          error: undefined
-        })
+      var category = undefined;
+      const hashParts = window.location.hash.split('#');
+      var sectorTypes = sector.type;
 
-        if (category !== undefined) {
-          this.getComps(category);
-        }
+      var sorted = Object.keys(sectorTypes).sort((a, b) => { 
+        return sectorTypes[a].rank ? sectorTypes[a].rank - sectorTypes[b].rank : sectorTypes[a];
+      });
+
+      if (hashParts.length > 1 && Object.keys(sector.type).includes(hashParts[1].replace('-', ' '))) {
+        const hash = hashParts[1].replace('-', ' ');
+        category = hash;
+      } else if (this.props.location.state && this.props.location.state.selectedCategory) {
+        category = this.props.location.state.selectedCategory
       } else {
-        this.setState({
-          error: 'invalid'
-        })
-      } 
+        category = sorted[0];
+      }
+
+      this.setState({
+        sector: sector,
+        sorted: sorted,
+        sectorID: sectorID,
+        error: undefined
+      })
+
+      if (category !== undefined) {
+        this.getComps(category);
+      }
     })
     .catch(err => {
       this.setState({
-        error: 'invalid'
+        error: err
       })
     });    
   }
@@ -100,10 +100,8 @@ class SectorDetails extends React.Component {
   };
 
   getComps(category) {
-    var db = firebase.firestore();
-    var compsRef = db.collection('public').where('category.'+category, '==', true);
 
-    compsRef.get()
+    this.props.getQuery('public','category.'+category,'==', true)
     .then(snapshot => {
         var compsList = [];
         snapshot.forEach(doc => {
@@ -118,7 +116,7 @@ class SectorDetails extends React.Component {
       this.setState({ 
         compSet: undefined, 
         selectedCategoryName: undefined,
-        error: 'invalid'
+        error: err
       });
     });
   }
@@ -141,23 +139,25 @@ class SectorDetails extends React.Component {
   }
 
  render() {
-    const { sector, compSet, selectedCategoryName, error, sectorID } = this.state;
+    const { classes, location } = this.props;
+    const { sector, compSet, selectedCategoryName, error, sectorID, sorted } = this.state;
 
     if (error) {
       return (<ErrorMessage message="Sorry, we are not tracking this sector yet! Please try another" />);
     }
     return (
-    <div>
+    <div className={classes.root} >
       <Helmet>
         <title>{sectorID.toProperCase()}</title>
         <meta name="description" content={"Valuation & Operating Analysis  for " + sectorID.toProperCase()} />          
       </Helmet>
       <SectorCard sector={sector} 
-                  categories={!sector ? undefined : sector.type} 
+                  categories={sector && sector.type} 
                   handleDelete={this.handleDelete}
                   updateCompSet={this.getComps}
                   selectedCategoryName={selectedCategoryName}
-                  chipsOpen={this.props.location.state ? this.props.location.state.chipsOpen : false}
+                  sorted={sorted}
+                  chipsOpen={location.state ? location.state.chipsOpen : false}
                   />
 
       <SectorStats compSet={compSet} />
@@ -173,6 +173,7 @@ class SectorDetails extends React.Component {
 
       <SimilarStartups category={selectedCategoryName}
                        title='Selected Startups'
+                       getQuery={this.props.getQuery}
                     />                    
     </div>
     );

@@ -1,12 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import Card, { CardContent, CardHeader } from 'material-ui/Card';
+import { withStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+
 import NumberFormat from 'react-number-format';
 import Loading from '../shared/loading.js';
-import Avatar from 'material-ui/Avatar';
+import Avatar from '@material-ui/core/Avatar';
 import classNames from 'classnames';
-import Typography from 'material-ui/Typography';
+import Typography from '@material-ui/core/Typography';
 import { findDOMNode } from 'react-dom';
 import { formatMetric, formatSuffix } from '../shared/sharedFunctions.js';
 //const util = require('util'); //print an object
@@ -105,25 +108,23 @@ class CompanyIntro extends React.Component {
     var lastValuationText = <span className={classes.description}>Last Round: <NumberFormat value={formatMetric(lastValuation)} displayType={'text'} thousandSeparator={true} prefix={'$'} suffix={formatSuffix(lastValuation)} /></span>;
 
     return (
-    <div>
-      <Card className={classes.card}>
-        <div className={classes.logoWrapper}>
-          <Avatar
-              alt="Company Logo"
-              src={company.logo}
-              className={classNames(classes.avatar, classes.tileAvatar)}
-            />
-        </div>
-        <CardHeader 
-          title={company.name.toProperCase()}
-          subheader={lastValuationText}
-          className={classes.header}             
-        />
-        <CardContent>
-          <Typography className={classes.description}>{company.description}</Typography>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className={classes.card}>
+      <div className={classes.logoWrapper}>
+        <Avatar
+            alt="Company Logo"
+            src={company.logo}
+            className={classNames(classes.avatar, classes.tileAvatar)}
+          />
+      </div>
+      <CardHeader 
+        title={company.name.toProperCase()}
+        subheader={lastValuationText}
+        className={classes.header}             
+      />
+      <CardContent>
+        <Typography className={classes.description}>{company.description}</Typography>
+      </CardContent>
+    </Card>
     );
   }
 }

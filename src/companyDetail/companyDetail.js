@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import * as firebase from "firebase";
 import firestore from "firebase/firestore";
 import CompanyCard from './companyCard.js';
@@ -12,7 +12,7 @@ import {Helmet} from "react-helmet";
 import ReactGA from 'react-ga';
 import { calcMultiples, getCase, getFormattedMetric, formatMetric, formatSuffix, formatMultiple } from '../shared/sharedFunctions.js';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
 });
@@ -60,66 +60,56 @@ class CompanyDetails extends React.Component {
   }
 
   getCompany(id) {
-    var db = firebase.firestore();
-    var companyRef = db.collection('private').doc(id);
 
-    companyRef.get()
-    .then(doc => {
-        if (doc.exists) {
-          var company = doc.data();
-          var category = company.category !== undefined ? sortCategories(company.category)[0] : undefined;
-          var valuationCaseTickers = company.cases || undefined;
-          var isPublic = company.publicTicker || undefined;
+    var self = this;
 
-          this.setState({
-            company: company,
-            companyID: id,
-            selectedCategory: category,
-            isPublic: isPublic
-          })
+    this.props.getDoc('private', id)
+    .then( company => {
 
-          if (valuationCaseTickers) {
-            this.getCases(valuationCaseTickers);
-          }
+      var category = company.category && sortCategories(company.category)[0];
+      var valuationCaseTickers = company.cases;
+      var isPublic = company.publicTicker;
 
-          if (category !== undefined) {
-            this.getComps(category);
-          }
+      this.setState({
+        company: company,
+        companyID: id,
+        selectedCategory: category,
+        isPublic: isPublic
+      })
 
-          if (isPublic !== undefined) {
-            this.getPublicTicker(company.publicTicker)
-          }
+      if (valuationCaseTickers) {
+        this.getCases(valuationCaseTickers);
+      }
 
-        } else {
-          this.setState({
-            error: true
-          })
-        }
-        return null;
+      if (category) {
+        this.getComps(category);
+      }
+
+      if (isPublic) {
+        this.getPublicTicker(company.publicTicker)
+      }
+
+      ReactGA.event({
+        category: 'Startups',
+        action: 'Browse',
+        label: id
+      });
     })
     .catch(err => {
-      this.setState({
-        error: true
-      })
+      self.setState({ 
+        error: err
+      });
     });
   }
 
   getPublicTicker(id) {
-    var db = firebase.firestore();
-    var companyRef = db.collection('public').doc(id);
 
-    companyRef.get()
-    .then(doc => {
-        if (doc.exists) {
-          var company = doc.data();
-
-          this.setState({
-            publicCompany: company
-          })
-        } 
-        return null;
+    this.props.getDoc('public', id)
+    .then( obj => {
+      this.setState({
+        publicCompany: obj
+      });
     })
-    //Get the implied TEV and the forward year multiple
   }
 
   getComps(category) {
@@ -303,7 +293,7 @@ class CompanyDetails extends React.Component {
     <div>
       <Helmet>
         <title>{!company ? "Valuation Analysis" : company.name}</title>
-        <meta name="description" content={"Public Market Valuation Analysis" + !company ? "" : company.name} />          
+        <meta name="description" content={"Private Company Valuation Analysis" + !company ? "" : company.name} />          
       </Helmet>
     	<CompanyCard  company={company} />
 
@@ -337,6 +327,7 @@ class CompanyDetails extends React.Component {
 
       <SimilarStartups category={selectedCategory}
                        title='Private Comparables'
+                       getQuery={this.props.getQuery}
                     />                    
     </div>
     );

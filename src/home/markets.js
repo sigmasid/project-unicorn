@@ -1,34 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import ReactGA from 'react-ga';
-import * as firebase from "firebase";
-import firestore from "firebase/firestore";
-
-import List from 'material-ui/List';
-import ListSubheader from 'material-ui/List/ListSubheader';
-import ExpansionPanel, { ExpansionPanelDetails, ExpansionPanelSummary } from 'material-ui/ExpansionPanel';
-import Typography from 'material-ui/Typography';
-import Paper from 'material-ui/Paper';
-import Avatar from 'material-ui/Avatar';
-import Chip from 'material-ui/Chip';
 import classNames from 'classnames';
+import NumberFormat from 'react-number-format';
+import {Helmet} from "react-helmet";
 
-import { Link } from 'react-router-dom'
-import ExpandMore from 'material-ui-icons/ExpandMore';
-import DownIcon from 'material-ui-icons/KeyboardArrowDown';
-import UpIcon from 'material-ui-icons/KeyboardArrowUp';
+import List from '@material-ui/core/List';
+import ListSubheader from '@material-ui/core/ListSubheader';
 
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 
-import pink from 'material-ui/colors/pink';
-import green from 'material-ui/colors/green';
-import fetch from 'node-fetch';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
+
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import DownIcon from '@material-ui/icons/KeyboardArrowDown';
+import UpIcon from '@material-ui/icons/KeyboardArrowUp';
+
+import pink from '@material-ui/core/colors/pink';
+import green from '@material-ui/core/colors/green';
 
 import Loading from '../shared/loading.js';
-import NumberFormat from 'react-number-format';
 import KeyStats from '../markets/marketsKeyStats.js';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -240,38 +240,28 @@ class Markets extends React.Component {
   }
 
   fetchData(type) {
-    var url = 'https://us-central1-project-unicorn-24dcc.cloudfunctions.net/getMarketData';
     var self = this;
-    
-    //var json = {"commodities":[{"name":"Gold","price":1314.5,"priceChange":-0.2,"percentChange":-0.0152,"expirationDate":"2018-06-27","contractDate":"2018-06"},{"name":"Brent Crude","price":58.87,"priceChange":-16,"percentChange":-21.3704,"expirationDate":"2018-05-30","contractDate":"2018-07"},{"name":"Light Crude","price":69.59,"priceChange":-0.13,"percentChange":-0.1865,"expirationDate":"2018-05-22","contractDate":"2018-06"},{"name":"Natural Gas","price":2.74,"priceChange":0.029,"percentChange":1.0697,"expirationDate":"2018-05-29","contractDate":"2018-06"}],"americas":{"timeStamp":"05-07-2018","securityQuotes":[{"priceChange":"46.828","ticker":"@CCO","percentChange":"0.6495","querySecurityId":"0P00001G7B","openPrice":"7241.822","dayLow":"7235.76","activityTimeUTC":"2018-05-07T19:31:06Z","fiftyTwoWeekLow":"5996.8149","exchangeActivityTimeLabel":"05/07/2018 15:31 PM EDT","volume":"0","marketPhase":"Open","price":"7256.445","yesterdayPrice":"7209.617","name":"NASDAQ Composite PR USD","exchange":"XNAS","currency":"USD","region":"USA","fiftyTwoWeekHigh":"7637.269","dayHigh":"7291.738"},{"priceChange":"45.92","ticker":"!DJI","percentChange":"0.1893","querySecurityId":"0P00001FJG","openPrice":"24317.66","dayLow":"24263.42","activityTimeUTC":"2018-05-07T19:31:05Z","fiftyTwoWeekLow":"20553.45","exchangeActivityTimeLabel":"05/07/2018 15:31 PM EDT","volume":"231741441","marketPhase":"Open","price":"24308.43","yesterdayPrice":"24262.51","name":"DJ Industrial Average PR USD","exchange":"DJI","currency":"USD","region":"USA","fiftyTwoWeekHigh":"26616.71","dayHigh":"24479.45"},{"priceChange":"5.7","ticker":"SPX","percentChange":"0.2140","querySecurityId":"0P00001G7J","openPrice":"2669.36","dayLow":"2664.7","activityTimeUTC":"2018-05-07T19:31:06Z","fiftyTwoWeekLow":"2352.72","exchangeActivityTimeLabel":"05/07/2018 15:31 PM EDT","volume":"1391858302","marketPhase":"Open","price":"2669.12","yesterdayPrice":"2663.42","name":"S&P 500 PR","exchange":"SPI","currency":"USD","region":"USA","fiftyTwoWeekHigh":"2872.87","dayHigh":"2683.35"}]},"global":{"timeStamp":"05-07-2018","securityQuotes":[{"priceChange":"45.64","ticker":"000001","percentChange":"1.4765","querySecurityId":"0P00006NNM","openPrice":"3094.8989","dayLow":"3091.6579","activityTimeUTC":"2018-05-07T07:00:22Z","fiftyTwoWeekLow":"3016.5305","exchangeActivityTimeLabel":"05/07/2018 03:00 AM EDT","volume":"138948186","marketPhase":"Closed","price":"3136.6448","yesterdayPrice":"3091.0048","name":"SSE Composite PR CNY","exchange":"XSHG","currency":"RMB","region":"CHN","fiftyTwoWeekHigh":"3587.0323","dayHigh":"3136.8363"},{"priceChange":"64.45","ticker":"UKX","percentChange":"0.8590","querySecurityId":"0P00001IS1","openPrice":"7502.69","dayLow":"7502.69","activityTimeUTC":"2018-05-04T15:35:29Z","fiftyTwoWeekLow":"6866.95","exchangeActivityTimeLabel":"05/04/2018 11:35 AM EDT","volume":"0","marketPhase":"Closed","price":"7567.14","yesterdayPrice":"7502.69","name":"FTSE 100 PR GBP","exchange":"XLON","currency":"GBP","region":"GBR","fiftyTwoWeekHigh":"7792.56","dayHigh":"7570.22"},{"priceChange":"-5.62","ticker":"100000018","percentChange":"-0.0250","querySecurityId":"0P00006MR4","openPrice":"22513.22","dayLow":"22350.91","activityTimeUTC":"2018-05-07T06:00:01Z","fiftyTwoWeekLow":"19239.52","exchangeActivityTimeLabel":"05/07/2018 02:00 AM EDT","volume":"0","marketPhase":"Closed","price":"22467.16","yesterdayPrice":"22472.78","name":"Nikkei 225 Average PR JPY","exchange":"XOSE","currency":"JPY","region":"JPN","fiftyTwoWeekHigh":"24129.34","dayHigh":"22513.48"},{"priceChange":"128.54","ticker":"DAX","percentChange":"1.0027","querySecurityId":"0P00001FKV","openPrice":"12827.43","dayLow":"12813.55","activityTimeUTC":"2018-05-07T15:45:00Z","fiftyTwoWeekLow":"11726.62","exchangeActivityTimeLabel":"05/07/2018 11:45 AM EDT","volume":"0","marketPhase":"Closed","price":"12948.14","yesterdayPrice":"12819.6","name":"FSE DAX TR EUR","exchange":"XETR","currency":"XXP","region":"DEU","fiftyTwoWeekHigh":"13596.89","dayHigh":"12961.05"},{"priceChange":"67.76","ticker":"HSI","percentChange":"0.2264","querySecurityId":"0P00001FL8","openPrice":"30102.06","dayLow":"29791.87","activityTimeUTC":"2018-05-07T08:08:58Z","fiftyTwoWeekLow":"24476.2","exchangeActivityTimeLabel":"05/07/2018 04:08 AM EDT","volume":"0","marketPhase":"Closed","price":"29994.26","yesterdayPrice":"29926.5","name":"Hang Seng HSI PR HKD","exchange":"XHKG","currency":"HKD","region":"HKG","fiftyTwoWeekHigh":"33484.08","dayHigh":"30138.33"}]}};
-    //this.setState({data: json, currentData: self.getCurrentData(type, json), selectedType: type, timeStamp: this.getTimestamp(type, json)});
 
-    var db = firebase.firestore();
-    var companyRef = db.collection('markets').doc('pricing').get()
-    .then(doc => {
-      if (doc.exists) {
-        var json = doc.data();
-        self.setState({data: json, currentData: self.getCurrentData(type, json), selectedType: type, timeStamp: this.getTimestamp(type, json)});        
-      }
+    this.props.getDoc('markets', 'indices')
+    .then( obj => {
+      self.setState({ data: obj, currentData: self.getCurrentData(type, obj), selectedType: type, timeStamp: this.getTimestamp(type, obj)});              
     })
     .catch(err => {
-      self.setState({
-        error: true
-      })
+      self.setState({ 
+        error: err,
+        currentData: undefined,
+        selectedType: undefined
+      });
     });
-    /**
-    fetch(url)
-    .then(res => res.json())
-    .then(json => {
-      this.setState({data: json, currentData: self.getCurrentData(type, json), selectedType: type, timeStamp: this.getTimestamp(type, json)});
-    })
-    .catch(function(err) {
-      this.setState({error: err});
-    }); **/ 
   }
 
   setCurrentData(type) {
     this.setState({selectedType: type, currentData: this.getCurrentData(type), timestamp: this.getTimestamp(type)});
+    ReactGA.event({
+      category: 'Markets',
+      action: 'Selected Index',
+      label: type
+    });
   }
 
   getTimestamp(type, _data) {
@@ -315,6 +305,10 @@ class Markets extends React.Component {
 
     return (
       <div className={classes.root}>
+        <Helmet>
+          <title>Markets Summary</title>
+          <meta name="description" content={"U.S. and Global Indexes and Commodities Prices"} />          
+        </Helmet>      
         <Paper className={classes.header} >
           <Typography variant="display3" className={classes.titleText}>
             Markets

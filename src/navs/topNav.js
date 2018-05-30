@@ -1,21 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { findDOMNode } from 'react-dom';
 
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import IconButton from 'material-ui/IconButton';
-import SearchIcon from 'material-ui-icons/Search';
-import CloseIcon from 'material-ui-icons/Close';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import SearchIcon from '@material-ui/icons/Search';
+import CloseIcon from '@material-ui/icons/Close';
 import SearchBar from 'material-ui-search-bar';
-import Avatar from 'material-ui/Avatar';
+import Avatar from '@material-ui/core/Avatar';
 
 import MobileNav from './mobileNav.js';
 import RenderSuggestionsContainer from '../shared/searchSuggestions.js';
 
-const util = require('util') //print an object
+//const util = require('util') //print an object
 
 const styles = theme => ({
   appBar: {
@@ -120,12 +120,34 @@ class TopNav extends React.Component {
     menuOpen: false
   };
 
-  handleChange = (value) => {    
-    this.setState({
-      anchorEl: findDOMNode(this.button),
-      results: this.props.getSuggestions(value),
-      searchText: value
-    });
+  handleChange = (value) => {
+    
+    if (!this.state.initialLoadComplete) {
+      var loading = {"loading": {"name": "Searching..."}};
+
+      this.setState({
+        anchorEl: findDOMNode(this.button),
+        initialLoadComplete: true,
+        results: loading,
+        searchText: value
+      });
+    }
+    
+    this.props.getSuggestions(value)
+    .then( data => {
+
+      this.setState({
+        anchorEl: findDOMNode(this.button),
+        results: data,
+      });
+    })
+    .catch( err => {
+      this.setState({
+        anchorEl: undefined,
+        results: undefined,
+        searchText: value
+      });
+    })
     return null;
   };
 
@@ -192,7 +214,7 @@ class TopNav extends React.Component {
       <div className={classNames(classes.searchSuggestions, !this.state.searchOpen && classes.mobileSearch)}>
         <SearchBar
           ref={node => { this.mobileSearch = node;}}
-          placeholder='Search Unicorns'
+          placeholder='Search Companies'
           onChange={ (value) => this.handleChange(value) }
           onRequestSearch={ this.handleChange.bind(null) }
           className={classes.searchBar}

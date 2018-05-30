@@ -1,12 +1,15 @@
 import React from 'react';
-import { MenuItem, MenuList} from 'material-ui/Menu';
-import { ListItemText } from 'material-ui/List';
-import Grow from 'material-ui/transitions/Grow';
-import Paper from 'material-ui/Paper';
-import { Link } from 'react-router-dom';
-import { withStyles } from 'material-ui/styles';
-import { CircularProgress } from 'material-ui/Progress';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
+
+import MenuItem from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
+import ListItemText from '@material-ui/core/ListItemText';
+
+import Grow from '@material-ui/core/Grow';
+import Paper from '@material-ui/core/Paper';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const styles = theme => ({
   menuItem: {
@@ -27,7 +30,6 @@ const styles = theme => ({
 class RenderSuggestionsContainer extends React.Component {
   render() {
     const { results, anchorEl, handleClose, classes, handleSelect } = this.props;
-    console.log('handleselect is '+handleSelect);
 
     if (results === undefined || Object.keys(results).length === 0) {
       return null;

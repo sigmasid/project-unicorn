@@ -1,13 +1,17 @@
 import React from 'react';
-import { withStyles } from 'material-ui/styles';
-import { ListItemIcon, ListItemText } from 'material-ui/List';
-import CompanyIcon from 'material-ui-icons/Highlight';
-
-import ExpandLess from 'material-ui-icons/ExpandLess';
-import ExpandMore from 'material-ui-icons/ExpandMore';
-import Collapse from 'material-ui/transitions/Collapse';
-import { MenuList, MenuItem } from 'material-ui/Menu';
 import classNames from 'classnames';
+
+import { withStyles } from '@material-ui/core/styles';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+
+import CompanyIcon from '@material-ui/icons/Highlight';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+
+import Collapse from '@material-ui/core/Collapse';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import { Link } from 'react-router-dom'
 
@@ -81,8 +85,8 @@ class CompanyDetailMenu extends React.Component {
             <MenuItem className={classNames(classes.menuItem,classes.nested)} component={Link} to={this.createPath(match, 'financials')} selected={detailedPath === 'financials'}>
               <ListItemText inset primary="Financials" classes={{ primary: classes.primary }} />
             </MenuItem>
-            <MenuItem className={classNames(classes.menuItem,classes.nested)} component={Link} to={this.createPath(match, 'comps')} selected={detailedPath === 'comps'}>
-              <ListItemText inset primary="Comps" classes={{ primary: classes.primary }}/>
+            <MenuItem className={classNames(classes.menuItem,classes.nested)} component={Link} to={this.createPath(match, 'valuation')} selected={detailedPath === 'valuation'}>
+              <ListItemText inset primary="Valuation" classes={{ primary: classes.primary }}/>
             </MenuItem>
           </MenuList>
         </Collapse>

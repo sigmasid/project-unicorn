@@ -1,17 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
-import { MenuList, MenuItem } from 'material-ui/Menu';
-import { ListItemIcon, ListItemText } from 'material-ui/List';
-import Divider from 'material-ui/Divider';
-import Drawer from 'material-ui/Drawer';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
 
-import SectorsIcon from 'material-ui-icons/Dashboard';
-import MarketsIcon from 'material-ui-icons/Equalizer';
-import TrendingIcon from 'material-ui-icons/Whatshot';
-import StartupsIcon from 'material-ui-icons/ChildCare';
-import NewsIcon from 'material-ui-icons/Comment';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+
+import Divider from '@material-ui/core/Divider';
+import Drawer from '@material-ui/core/Drawer';
+
+import SectorsIcon from '@material-ui/icons/Dashboard';
+import MarketsIcon from '@material-ui/icons/Equalizer';
+import TrendingIcon from '@material-ui/icons/Whatshot';
+import StartupsIcon from '@material-ui/icons/ChildCare';
+import NewsIcon from '@material-ui/icons/Comment';
 
 import { Link } from 'react-router-dom'
 

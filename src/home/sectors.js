@@ -1,23 +1,28 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import List, { ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
-import Typography from 'material-ui/Typography';
-import Paper from 'material-ui/Paper';
-import Button from 'material-ui/Button';
-import Avatar from 'material-ui/Avatar';
-import Chip from 'material-ui/Chip';
-import classNames from 'classnames';
-
+import { withStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom'
-import NavigateNext from 'material-ui-icons/NavigateNext';
-import Loading from '../shared/loading.js';
+import classNames from 'classnames';
+import {Helmet} from "react-helmet";
 
-import * as firebase from "firebase";
-import firestore from "firebase/firestore";
+import Loading from '../shared/loading.js';
+import Icons from '../shared/icons.js';
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+
+import NavigateNext from '@material-ui/icons/NavigateNext';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
+
 import ReactGA from 'react-ga';
 
-const util = require('util'); //print an object
+//const util = require('util'); //print an object
 
 const styles = theme => ({
   root: {
@@ -65,7 +70,8 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.default
   },
   chipAvatar: {
-    background: 'none',
+    background: 'white',
+    color: 'black',
     fontSize: '2rem'
   },
   emoji: {
@@ -107,24 +113,24 @@ const styles = theme => ({
   }
 });
 
-const Categories = (classes, selectedCategory, selectedCategoryName) => {
-  if (!selectedCategory) {
+const SectorDetail = (classes, selectedSector, selectedSectorName) => {
+  if (!selectedSector) {
     return <Loading />
   }
 
   return (
     <List className={classes.tickerList}>
-      { Object.keys(selectedCategory).map(function(category) {
+      { Object.keys(selectedSector).map(function(sector) {
 
-        var categoryLink = selectedCategoryName === 'technology' ? category.replace(/ /g,"-") : selectedCategoryName.replace(/ /g,"-");
-        var selectedCategoryLink = selectedCategoryName === 'technology' ? undefined : category;
-        var chipsOpen = selectedCategoryName === 'technology' ? true : false;
+        var sectorLink = selectedSectorName === 'technology' ? sector.replace(/ /g,"-") : selectedSectorName.replace(/ /g,"-");
+        var selectedSectorLink = selectedSectorName === 'technology' ? undefined : sector;
+        var chipsOpen = selectedSectorName === 'technology' ? true : false;
         
         return(
-        <Link to={{ pathname: '/sectors/'+categoryLink, state: { selectedCategory: selectedCategoryLink, chipsOpen: chipsOpen } }} key={category} className={classes.link} >
-          <ListItem button key={category} >
-            <Avatar className={classes.avatar}>{typeof selectedCategory[category].logo === 'string' ? selectedCategory[category].logo : category.charAt(0).toUpperCase()}</Avatar>
-            <ListItemText primary={category.toProperCase()} />
+        <Link to={{ pathname: '/sectors/'+sectorLink, state: { selectedCategory: selectedSectorLink, chipsOpen: chipsOpen } }} key={sector} className={classes.link} >
+          <ListItem button key={sector} >
+            <Avatar className={classes.avatar}>{typeof selectedSector[sector].logo === 'string' ? selectedSector[sector].logo : sector.charAt(0).toUpperCase()}</Avatar>
+            <ListItemText primary={sector.toProperCase()} />
             <ListItemSecondaryAction>           
               <Button mini aria-label="expand" className={classes.button} color="primary">
                 <NavigateNext color={'primary'} />
@@ -139,109 +145,103 @@ const Categories = (classes, selectedCategory, selectedCategoryName) => {
   );
 }
 
-const CategoryChips = (classes, categories, handleClick, selectedCategoryName, categoriesObj) => {
+const SectorChips = (props) => {
+  var {classes, sectors, handleChange, selectedSectorName } = props;
+
   return(
     <Paper className={classes.paper}>
-    {categories.map(category => {
+    {sectors.map(sector => {
       return (
-        <Chip key={category} 
-              onClick={() => handleClick(category)} 
-              label={category.toProperCase()} 
-              avatar={selectedCategoryName === category ? <Avatar className={classes.chipAvatar}>{categoriesObj[category].logo}</Avatar> : null}
-              className={selectedCategoryName === category ? classNames(classes.selectedChip, classes.chip) : classes.chip} />
+        <Chip key={sector} 
+              onClick={() => handleChange(sector)} 
+              label={sector.toProperCase()} 
+              avatar={selectedSectorName === sector ? <Avatar className={classes.chipAvatar}>{Icons(sector)}</Avatar> : null}
+              className={selectedSectorName === sector ? classNames(classes.selectedChip, classes.chip) : classes.chip} />
       );
     })}
   </Paper>
   );
 }
 
-class Explore extends React.Component {
+class Sectors extends React.Component {
+  state = {};
+
   constructor (props) {
     super(props);
 
-    this.state = {
-      value: 0
-    }
-
     this.handleChange = this.handleChange.bind(this);
-    this.getCategories = this.getCategories.bind(this);
-    this.getIndices = this.getIndices.bind(this);
+    this.getSectorDetail = this.getSectorDetail.bind(this);
+    //this.getIndices = this.getIndices.bind(this);
 
-    this.getIndices();
+    if (!props.sectors) {
+      props.getSectors();
+    } else {
+      this.getSectorDetail(props.sectors[0]);
+    }
   }
 
-  handleChange = (category) => {
-    if (this.state.selectedCategory !== category) {
-      this.getCategories(category);
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (!prevProps.sectors && this.props.sectors) {
+      this.getSectorDetail(this.props.sectors[0]);
+    }
+  }
+
+  handleChange = (sectorName) => {
+    if (this.state.selectedSectorName !== sectorName) {
+      this.getSectorDetail(sectorName);
     }
   };
 
-  getCategories = (type) => {
-    var db = firebase.firestore();
-    var catRef = db.collection('categories').doc(type);
+  getSectorDetail = (type) => {
+    var self = this;
 
-    catRef.get()
-    .then(doc => {
-        var catObj = doc.data();
-        this.setState({  selectedCategory: catObj.type, selectedCategoryName: type });
-        ReactGA.event({
-          category: 'Explore',
-          action: 'Selected Category',
-          label: type
-        });
-    })
-    .catch(err => {
-      this.setState({ 
-        selectedCategory: undefined,
-        selectedCategoryName: undefined
+    this.props.getDoc('categories', type)
+    .then( obj => {
+      self.setState({  selectedSector: obj.type, selectedSectorName: type });
+      ReactGA.event({
+        category: 'Sectors',
+        action: 'Selected Category',
+        label: type
       });
-    });
-  }
-
-  getIndices = (type, value) => {
-    var db = firebase.firestore();
-    var indicesRef = db.collection('indices').doc('sectors');
-
-    indicesRef.get()
-    .then(doc => {
-        var catObj = doc.data();
-        var sorted = Object.keys(catObj).sort(function(a, b) { return catObj[a].rank - catObj[b].rank  });
-        this.setState({ categories: sorted,
-                        categoriesObj: catObj,
-                        selectedCategoryName: sorted[0]
-                      });
-        this.getCategories(sorted[0]);
     })
     .catch(err => {
-      this.setState({ 
-        categories: undefined
+      self.setState({ 
+        selectedSector: undefined,
+        selectedSectorName: undefined,
+        error: err
       });
     });
   }
 
   render() {
-    const { classes } = this.props;
-    const { categories, categoriesObj, selectedCategory, selectedCategoryName } = this.state;
+    const { classes, sectors, sectorsObj } = this.props;
+    const { selectedSector, selectedSectorName } = this.state;
 
     return (
       <div className={classes.root}>
+        <Helmet>
+          <title>Sector Watch</title>
+          <meta name="description" content={"Get detailed valuation and financial analysis for top technology and non-technology sectors"} />          
+        </Helmet>       
         <Paper className={classes.header} >
           <Typography variant="display3" className={classes.titleText}>
             Sectors
           </Typography>
-          { categories && CategoryChips(classes, categories, this.handleChange, selectedCategoryName, categoriesObj )}
+          { sectors && <SectorChips classes={classes} sectors={sectors} handleChange={this.handleChange} selectedSectorName={selectedSectorName} sectorsObj={sectorsObj} />}
         </Paper>
 
         <Paper className={classes.lists} >
-          { Categories(classes, selectedCategory, selectedCategoryName) }
+          { SectorDetail(classes, selectedSector, selectedSectorName) }
         </Paper>          
       </div>
     );
   }
 }
 
-Explore.propTypes = {
+Sectors.propTypes = {
   classes: PropTypes.object.isRequired,
+  sectors: PropTypes.array,
+  sectorsObj: PropTypes.object
 };
 
-export default withStyles(styles)(Explore);
+export default withStyles(styles)(Sectors);

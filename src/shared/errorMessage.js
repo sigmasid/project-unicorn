@@ -1,8 +1,8 @@
 import React from 'react'
-import ErrorIcon from 'material-ui-icons/Error';
-import { withStyles } from 'material-ui/styles';
+import ErrorIcon from '@material-ui/icons/Error';
+import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import Typography from 'material-ui/Typography';
+import Typography from '@material-ui/core/Typography';
 
 const styles = theme => ({
   root: {

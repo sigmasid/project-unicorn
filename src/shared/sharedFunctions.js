@@ -1,16 +1,16 @@
 import React from 'react';
-import TextField from 'material-ui/TextField';
-import Typography from 'material-ui/Typography';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import NumberFormat from 'react-number-format';
-import pink from 'material-ui/colors/pink';
-import cyan from 'material-ui/colors/cyan';
-import { MenuItem } from 'material-ui/Menu';
+import pink from '@material-ui/core/colors/pink';
+import cyan from '@material-ui/core/colors/cyan';
+import lightBlue from '@material-ui/core/colors/lightBlue';
+import MenuItem from '@material-ui/core/MenuItem';
 
 export const maxRevenueMultiple = 20;
 export const maxEBITDAMultiple = 75;
 export const maxPEMultiple = 100;
-
-export const colorsArray = [pink[500], cyan[900], cyan[500], cyan[200], cyan[50]];
+export const colorsArray = [lightBlue[500], pink[500], cyan[900], cyan[500], cyan[200], cyan[50]];
 
 export const getDurationLabel = duration => {
   const chartDurations = {"1d":"1 Day","1w":"1 Week","1m":"1 Month","3m":"3 Months","6m":"6 Months","1y":"1 Year","2y":"2 Years","5y":"5 Years"};
@@ -33,35 +33,31 @@ export function Element(props) {
 }
 
 
-export const createDate = dateString => {
-  var dateArray = dateString.split('-');
-  return new Date(dateArray[0],dateArray[1]-1,dateArray[2]);
-}
 
-export const createDateTime = (dateString, timeString) => {
-  var year = dateString.substring(0,4);
-  var month = dateString.substring(4,6);
-  var day = dateString.substring(6,8);
-  var hour = timeString.split(':')[0];
-  var min = timeString.split(':')[1];
-  var newDate = new Date(year,month,day,hour,min);
-  return newDate;
-}
-
-export const getFormattedMetric = (type, year, short) => {
-  let selectedYear = year === 'cy1' ? (new Date()).getFullYear() : (new Date()).getFullYear() + 1;
-
-  if (type === 'rev') {
-    return selectedYear + (short ? 'E Rev' : 'E Revenue');
-  } else if (type === 'ebitda') {
-    return selectedYear + 'E EBITDA';
-  } else if (type === 'eps') {
-    return selectedYear + 'E P/E';
-  } else if (type === 'rev_growth') {
-    return selectedYear + (short ? 'E Rev' : 'E Revenue');
+function getYear(year) {
+  switch (year) {
+    case 'ltm': return 'LTM'
+    case 'cy': return (new Date().getFullYear() - 1);
+    case 'cy1': return (new Date().getFullYear());
+    case 'cy2': return (new Date().getFullYear() + 1);
+    default: return '';
   }
+}
 
-  return '';
+function getMetricType(metric, period) {
+  var estimate = period === 'ltm' ? '' : 'E';
+
+  switch (metric) {
+    case 'rev': return estimate + ' Revenue';
+    case 'ebitda': return estimate + ' EBITDA';
+    case 'eps': return estimate + ' P/E';
+    case 'rev_growth': return estimate + ' Revenue';
+    default: return '';
+  }
+}
+
+export const getFormattedMetric = (type, year) => {
+  return getYear(year)+getMetricType(type, year);
 }
 
 export const parseValue = (metric) => {
@@ -101,7 +97,11 @@ export const formatSuffix = (metric) => {
 }
 
 
-const multipleYear = [
+export const multipleYear = [
+  {
+    value: 'cy',
+    label: '2017'
+  },
   {
     value: 'cy1',
     label: '2018E',
@@ -131,14 +131,37 @@ const multipleMetric = [
   },
 ];
 
+const basicMultipleYear = [
+  {
+    value: 'ltm',
+    label: 'LTM'
+  }
+];
+
+const basicMultipleMetric = [
+  {
+    value: 'rev',
+    label: 'Revenue',
+  },
+  {
+    value: 'ebitda',
+    label: 'EBITDA',
+  },  
+  {
+    value: 'eps',
+    label: 'P/E',
+  }
+];
+
 export function SelectYear(props) {
-  const { classes } = props;
+  const { classes, categories } = props;
+  var dataSource = categories ? multipleYear : basicMultipleYear;
 
   return(
   <TextField 
     id="select-year" 
     select
-    label="Select Year"
+    label="Select Period"
     className={classes.textField}
     value={props.selectedYear}
     onChange={props.handleChange('selectedYear')}
@@ -149,8 +172,8 @@ export function SelectYear(props) {
     }}
     margin="normal"
   >
-  
-  {multipleYear.map(option => (
+
+  { dataSource.map(option => (
     <MenuItem key={option.value} value={option.value}>
       {option.label}
     </MenuItem>
@@ -160,7 +183,8 @@ export function SelectYear(props) {
 }
 
 export function SelectMetric(props) {
-  const { classes } = props;
+  const { classes, categories } = props;
+  var dataSource = categories ? multipleMetric : basicMultipleMetric;
 
   return(
   <TextField 
@@ -178,7 +202,7 @@ export function SelectMetric(props) {
     margin="normal"
   >
   
-  {multipleMetric.map(option => (
+  {dataSource.map(option => (
     <MenuItem key={option.value} value={option.value}>
       {option.label}
     </MenuItem>
